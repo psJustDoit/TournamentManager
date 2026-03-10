@@ -14,7 +14,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TournamentManager.ViewModels;
-using TournamentManager.Models;
 using System.ComponentModel;
 
 namespace TournamentManager

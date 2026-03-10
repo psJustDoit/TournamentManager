@@ -45,6 +45,11 @@ namespace TournamentManager
             _tournamentViewModel.AllTeams.Add(teamToAdd);
             _tournamentViewModel.AllTeams.OrderByDescending(x => x.Score);
 
+            if(_tournamentViewModel.RoundCount > 1)
+            {
+                _tournamentViewModel.Draws.Add(teamToAdd);
+            }
+
             TeamNameTextbox.Text = String.Empty;
             TeamCityTextbox.Text = String.Empty;
         }

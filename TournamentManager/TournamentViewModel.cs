@@ -11,11 +11,28 @@ namespace TournamentManager.ViewModels
     public class TournamentViewModel : INotifyPropertyChanged
     {
         private uint dummyTeamCount = 0;
+        private List<Team> _winners { get; set; } = new List<Team>();
+        public List<Team> Winners
+        {
+            get;
+            private set;
+        }
+
+        private List<Team> _losers { get; set; } = new List<Team>();
+        public List<Team> Losers
+        {
+            get;
+            private set;
+        }
+
+        private List<Team> _draws { get; set; } = new List<Team>();
+        public List<Team> Draws
+        {
+            get;
+            private set;
+        }
 
         private int nextTeamId = 0;
-        private List<Team> Winners { get; set; } = new List<Team>();
-        private List<Team> Losers { get; set; } = new List<Team>();
-        private List<Team> Draws { get; set; } = new List<Team>();
         public int NextTeamId
         {
             get { return nextTeamId; }
@@ -54,7 +71,7 @@ namespace TournamentManager.ViewModels
         public bool IsViewingWinnersBracket
         {
             get { return _isViewingWinnersBracket; }
-            set { _isViewingWinnersBracket = value; }
+            set { _isViewingWinnersBracket = value; OnPropertyChanged(nameof(IsViewingWinnersBracket)); }
         }
 
 
@@ -64,13 +81,6 @@ namespace TournamentManager.ViewModels
             get => _allTeams;
             set { _allTeams = value; OnPropertyChanged(nameof(AllTeams)); }
         }
-
-        //private ObservableCollection<Team> _nonPlayers = new ObservableCollection<Team>();
-        //public ObservableCollection<Team> NonPlayers
-        //{
-        //    get => _nonPlayers;
-        //    set { _nonPlayers = value; OnPropertyChanged(nameof(NonPlayers)); }
-        //}
 
         private ObservableCollection<TeamPairing> _winnersBracket = new ObservableCollection<TeamPairing>(); 
         public ObservableCollection<TeamPairing> WinnersBracket 
@@ -93,25 +103,42 @@ namespace TournamentManager.ViewModels
             set { _firstRoundPairings = value; OnPropertyChanged(nameof(FirstRoundPairings)); }
         }
 
+        public TournamentViewModel()
+        {
+            var team1 = new Team(NextTeamId, "tim 1");
+            var team2 = new Team(NextTeamId, "tim 2");
+            var team3 = new Team(NextTeamId, "tim 3");
+            var team4 = new Team(NextTeamId, "tim 4");
+            var team5 = new Team(NextTeamId, "tim 5");
+            var team6 = new Team(NextTeamId, "tim 6");
 
+            FirstRoundPairings.Add(new TeamPairing(team1, team2));
+            team1.Opponent = team2;
+            team2.Opponent = team1;
+            FirstRoundPairings.Add(new TeamPairing(team3, team4));
+            team3.Opponent = team4;
+            team4.Opponent = team3;
+            FirstRoundPairings.Add(new TeamPairing(team5, team6));
+            team5.Opponent = team6;
+            team5.Opponent = team6;
 
-        
+        }
 
         public void MatchmakeTeamsFirstRound()
         {
             var teamsNotYetPaired = AllTeams.ToList();
             foreach (var team in AllTeams) 
             {
-                if(team.TeamCurrentlyPlayingWith == null)
+                if(team.Opponent == null)
                 {
                     // Pair with dummy team if there are no available teams
-                    if(!AllTeams.Where(x => x.TeamId != team.TeamId && x.TeamCurrentlyPlayingWith == null).Any())
+                    if(!AllTeams.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any())
                     {
                         dummyTeamCount += 1;
                         NextTeamId += 1;
                         var dummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", null);
-                        team.TeamCurrentlyPlayingWith = dummyTeam;
-                        dummyTeam.TeamCurrentlyPlayingWith = team;
+                        team.Opponent = dummyTeam;
+                        dummyTeam.Opponent = team;
                         FirstRoundPairings.Add(new TeamPairing(team, dummyTeam));
                     }
                     else
@@ -119,12 +146,11 @@ namespace TournamentManager.ViewModels
                         Random random = new Random();
                         var randomTeamPickIndex = random.Next(0, teamsNotYetPaired.Count);
                         var teamToPair = teamsNotYetPaired.Where(x => x.TeamId != team.TeamId).ToList()[randomTeamPickIndex];
-                        team.TeamCurrentlyPlayingWith = teamToPair;
-                        teamToPair.TeamCurrentlyPlayingWith = team;
+                        team.Opponent = teamToPair;
+                        teamToPair.Opponent = team;
                         FirstRoundPairings.Add(new TeamPairing(team, teamToPair));
-                        teamsNotYetPaired = teamsNotYetPaired.Where(x => x.TeamCurrentlyPlayingWith == null).ToList();
+                        teamsNotYetPaired = teamsNotYetPaired.Where(x => x.Opponent == null).ToList();
                     }
-                    
                 }
             } 
         }
@@ -137,14 +163,14 @@ namespace TournamentManager.ViewModels
             {
                 Team opponentTeam = null;
 
-                if(team.TeamCurrentlyPlayingWith == null)
+                if(team.Opponent == null)
                 {
-                    if(!teamBracket.Where(x => x.TeamId != team.TeamId && x.TeamCurrentlyPlayingWith == null).Any() && !draws.Any())
+                    if(!teamBracket.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any() && !draws.Any())
                     {
                         if (draws.Any())
                         {
                             opponentTeam = draws.First();
-                            team.TeamCurrentlyPlayingWith = opponentTeam;
+                            team.Opponent = opponentTeam;
                             opponentTeam = team;
                             draws.RemoveAt(0);
                         }
@@ -153,8 +179,8 @@ namespace TournamentManager.ViewModels
                             dummyTeamCount += 1;
                             NextTeamId += 1;
                             var opponentDummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", null);
-                            team.TeamCurrentlyPlayingWith = opponentDummyTeam;
-                            opponentDummyTeam.TeamCurrentlyPlayingWith = team;
+                            team.Opponent = opponentDummyTeam;
+                            opponentDummyTeam.Opponent = team;
                             opponentTeam = opponentDummyTeam;
                         }                          
                     }
@@ -178,11 +204,11 @@ namespace TournamentManager.ViewModels
                             }
                         }
 
-                        team.TeamCurrentlyPlayingWith = teamWithSmallestScoreDiff;
-                        teamWithSmallestScoreDiff.TeamCurrentlyPlayingWith = team;
+                        team.Opponent = teamWithSmallestScoreDiff;
+                        teamWithSmallestScoreDiff.Opponent = team;
                         opponentTeam = teamWithSmallestScoreDiff;
 
-                        teamsNotYetPaired = teamsNotYetPaired.Where(x => x.TeamCurrentlyPlayingWith == null).ToList();
+                        teamsNotYetPaired = teamsNotYetPaired.Where(x => x.Opponent == null).ToList();
                     }
                 }
 

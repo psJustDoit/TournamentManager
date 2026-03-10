@@ -32,6 +32,13 @@ namespace TournamentManager
             set { _losses = value; OnPropertyChanged(nameof(Losses)); }
         }
 
+        private uint _draws;
+        public uint Draws
+        {
+            get => _draws;
+            set { _draws = value; OnPropertyChanged(nameof(Draws)); }
+        }
+
         private int _score;
         public int Score 
         {
@@ -46,11 +53,11 @@ namespace TournamentManager
             set { _city = value; OnPropertyChanged(nameof(City)); } 
         }
 
-        private Team? _teamCurrentlyPlayingWith;
-        public Team? TeamCurrentlyPlayingWith
+        private Team? _opponent;
+        public Team? Opponent
         {
-            get => _teamCurrentlyPlayingWith;
-            set { _teamCurrentlyPlayingWith = value; OnPropertyChanged(nameof(TeamCurrentlyPlayingWith)); }
+            get => _opponent;
+            set { _opponent = value; OnPropertyChanged(nameof(Opponent)); }
         }
         private bool? isDraw;
         public bool IsDraw { get; set; }
@@ -64,12 +71,52 @@ namespace TournamentManager
             City = city;
             Wins = 0;
             Losses = 0;
+            Draws = 0;
             Score = 0;
-            TeamCurrentlyPlayingWith = null;
+            Opponent = null;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged(string name) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        public void HandleTeamWin()
+        {
+            Wins += 1;
+            Score += 2;
+        }
+
+        public void HandleTeamDraw()
+        {
+            Draws += 1;
+        }
+
+        public void HandleTeamLoss()
+        {
+            Losses += 1;
+        }
+
+        public void AdjustAccidentalTeamWin()
+        {
+            //TODO
+            Wins -= 1;
+
+        }
+
+        //public void SetTeamAndOpponentMatchOutcome(TeamMatchOutcome teamMatchOutcome) 
+        //{
+        //    switch (teamMatchOutcome) 
+        //    {
+        //        case TeamMatchOutcome.Win:
+        //            Wins += 1;
+        //            Score += 2;
+        //            Opponent.Losses += 1;
+        //            break;
+        //        case TeamMatchOutcome.Loss:
+        //            Losses += 1;
+        //            Opponent.Wins += 1;
+        //            break;
+        //    }
+        //}
     }
 }

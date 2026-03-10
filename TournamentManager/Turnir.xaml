@@ -11,6 +11,7 @@
         <local:ElementVisibilityConverter x:Key="ElementVisibility" />
     </Page.Resources>
 
+    <!-- Page -->
     <Grid Background="{StaticResource PrimaryBackgroundColor}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="80*"/>
@@ -24,7 +25,7 @@
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
-        <Border Grid.Row="0" Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" Margin="5, 0, 0, 0" BorderThickness="0, 1, 2, 2">
+        <Border Grid.Row="0" Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" Margin="5, 0, 0, 0" BorderThickness="0, 1, 1, 2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="50*" />
@@ -62,7 +63,7 @@
         </Border>
         
         <!-- Start tournament && next round button -->
-        <Border Grid.Column="2" Grid.Row="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 0, 2">
+        <Border Grid.Column="2" Grid.Row="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="1, 1, 0, 2">
             <Border CornerRadius="40"
                  Margin="15, 5, 15, 5"
                  BorderThickness="2"
@@ -93,14 +94,20 @@
             
             <!-- First match listing -->
             <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="80*"/>
+                    <ColumnDefinition Width="10*"/>
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10*" />
                     <RowDefinition Height="90*" />
                 </Grid.RowDefinitions>
 
                 <!-- Prva runda header -->
-                <TextBlock Grid.Row="0" Grid.ColumnSpan="5" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20"><Underline>Prva runda</Underline></TextBlock>
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20"><Underline>Prva runda</Underline></TextBlock>
+                
+                <ScrollViewer Grid.Row="1" Grid.Column="1" VerticalScrollBarVisibility="Hidden">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="10*" />
@@ -114,41 +121,127 @@
                         <ItemsControl Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding FirstRoundPairings}" >
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="0, 5, 0, 5" >
+                                    <Grid Margin="0, 15, 0, 15" >
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="40*" />
                                             <ColumnDefinition Width="20*" />
                                             <ColumnDefinition Width="40*" />
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- Team1 vs. Team2-->
+                                        <!-- Team1 -->
                                         <Border Grid.Column="0" Background="{StaticResource ButtonBackgroundColor}" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Stretch">
-                                            <TextBlock FontSize="15" Foreground="{StaticResource PrimaryFontColor}" Text="{Binding Team1.Name}" HorizontalAlignment="Center" />
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="70*"/>
+                                                    <RowDefinition Height="10*"/>
+                                                    <RowDefinition Height="20*"/>
+                                                </Grid.RowDefinitions>
+
+                                                <Grid Grid.Row="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="95*" />
+                                                        <ColumnDefinition Width="5*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Team1.Name}" Foreground="{StaticResource PrimaryFontColor}" FontSize="40" HorizontalAlignment="Center"/>
+                                                    <Label Grid.Column="1" Background="Transparent"/>
+                                                </Grid>
+                                                
+
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" Text="W : "/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" Text="{Binding Team1.Wins}"/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" Text=" "/>
+
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" Text="L : "/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" Text="{Binding Team1.Losses}"/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" Text=" "/>
+
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" Text="D : "/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" Text="{Binding Team1.Draws}"/>
+                                                </StackPanel>
+
+                                                <Grid Grid.Row="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Button Grid.Column="0" Content="W" FontSize="20" Background="Gray" Foreground="Black" Click="TeamMatchOutcome_Click" Tag="{x:Static local:TeamMatchOutcome.Team1Win}"/>
+                                                    <Button Grid.Column="1" Content="D" FontSize="20" Background="Gray" Foreground="Black" Click="TeamMatchOutcome_Click" Tag="{x:Static local:TeamMatchOutcome.Draw}"/>
+                                                </Grid>
+
+                                            </Grid>
                                         </Border>
 
-                                        <TextBlock Grid.Column="1" Foreground="{StaticResource PrimaryFontColor}" FontSize="15" Text="vs." HorizontalAlignment="Center" />
+                                        <!-- VS -->
+                                        <TextBlock Grid.Column="1" Foreground="{StaticResource PrimaryFontColor}" FontSize="30" Text="vs." HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
+                                        <!-- Team2 -->
                                         <Border Grid.Column="2" Background="{StaticResource ButtonBackgroundColor}" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2" CornerRadius="5" HorizontalAlignment="Stretch">
-                                            <TextBlock FontSize="15" Foreground="{StaticResource PrimaryFontColor}" Text="{Binding Team2.Name}" HorizontalAlignment="Center" />
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="70*"/>
+                                                    <RowDefinition Height="10*"/>
+                                                    <RowDefinition Height="20*"/>
+                                                </Grid.RowDefinitions>
+
+                                                <Grid Grid.Row="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="5*" />
+                                                        <ColumnDefinition Width="95*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Label Grid.Column="0" Background="Transparent"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Team2.Name}" Foreground="{StaticResource PrimaryFontColor}" FontSize="40" HorizontalAlignment="Center"/>
+                                                    
+                                                </Grid>
+                                               
+
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Label Foreground="{StaticResource PrimaryFontColor}" Content="W : "/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" Text="{Binding Team2.Wins}"/>
+                                                    <Label Foreground="{StaticResource PrimaryFontColor}" Content=" "/>
+
+                                                    <Label Foreground="{StaticResource PrimaryFontColor}" Content="L : "/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" Text="{Binding Team2.Losses}"/>
+                                                    <Label Foreground="{StaticResource PrimaryFontColor}" Content=" "/>
+
+                                                    <Label Foreground="{StaticResource PrimaryFontColor}" Content="D : "/>
+                                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" Text="{Binding Team2.Draws}"/>
+                                                </StackPanel>
+
+                                                <Grid Grid.Row="2">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Button Grid.Column="0" Content="W" FontSize="20" Background="Gray" Foreground="Black" Click="TeamMatchOutcome_Click" Tag="{x:Static local:TeamMatchOutcome.Team2Win}"/>
+                                                    <Button Grid.Column="1" Content="D" FontSize="20" Background="Gray" Foreground="Black" Click="TeamMatchOutcome_Click" Tag="{x:Static local:TeamMatchOutcome.Draw}"/>
+                                                </Grid>
+
+                                            </Grid>
                                         </Border>
                                     </Grid>
-                                    
+
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        
-                       
-                        
+
                     </Grid>
                 </ScrollViewer>
             </Grid>
             
             
         </Border>
-
+        <!-- END TEAM PAIRS -->
+        
+        <!-- TODO: Add winners bracket and losers bracket and buttons to switch between them -->
+        <!-- TODO: Add button "Done" to sort losers and winners in their respective brackets -->
+        <!-- TODO: Add button "Next round" to match teams in their respective brackets and increment round count -->
+        <!-- MAYBE: Add visible score count to each team in pairing and automatically end tournament when team reacher 50 points or more -->
     </Grid>
 </Page>
 
+<!-- To be used as buttons for switching between brackets -->
 <!--<Border Grid.Column="0" BorderThickness="0, 2, 2, 2" >
     <Border CornerRadius="40"
          BorderThickness="2"
