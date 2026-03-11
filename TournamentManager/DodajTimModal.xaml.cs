@@ -41,13 +41,14 @@ namespace TournamentManager
 
             _tournamentViewModel.NextTeamId += 1;
             var teamToAdd = new Team(_tournamentViewModel.NextTeamId, teamName, teamCity);
+            teamToAdd.IsDummyTeam = false;
 
             _tournamentViewModel.AllTeams.Add(teamToAdd);
             _tournamentViewModel.AllTeams.OrderByDescending(x => x.Score);
 
             if(_tournamentViewModel.RoundCount > 1)
             {
-                _tournamentViewModel.Draws.Add(teamToAdd);
+                _tournamentViewModel.NewlyAddedTeams.Add(teamToAdd);
             }
 
             TeamNameTextbox.Text = String.Empty;

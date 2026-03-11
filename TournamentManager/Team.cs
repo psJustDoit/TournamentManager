@@ -59,12 +59,39 @@ namespace TournamentManager
             get => _opponent;
             set { _opponent = value; OnPropertyChanged(nameof(Opponent)); }
         }
-        private bool? isDraw;
-        public bool IsDraw { get; set; }
+
+        private bool? _isWinner;
+        public bool? IsWinner
+        {
+            get => _isWinner;
+            set { _isWinner = value; }
+        }
+
+        private bool? _isLoser;
+        public bool? IsLoser
+        {
+            get => _isLoser;
+            set { _isLoser = value; }
+        }
+
+        private bool? _isDraw;
+        public bool? IsDraw
+        {
+            get => _isDraw;
+            set { _isDraw = value; }
+        }
+
+        private bool _isDummyTeam;
+        public bool IsDummyTeam
+        {
+            get => _isDummyTeam;
+            set { _isDummyTeam = value; }
+        }
+
         public List<Team> TeamsPlayedWith { get; set; } = new List<Team>();
         public List<Team> TeamsLostAgainst { get; set; } = new List<Team>();
 
-        public Team(int teamId, string name, string? city = null)
+        public Team(int teamId, string name, bool isDummyTeam, string? city = null)
         {
             TeamId = teamId;
             Name = name;
@@ -73,6 +100,7 @@ namespace TournamentManager
             Losses = 0;
             Draws = 0;
             Score = 0;
+            IsDummyTeam = isDummyTeam;
             Opponent = null;
         }
 
@@ -80,43 +108,39 @@ namespace TournamentManager
         protected void OnPropertyChanged(string name) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        public void HandleTeamWin()
+        public void IncreaseTeamWin()
         {
             Wins += 1;
             Score += 2;
         }
 
-        public void HandleTeamDraw()
+        public void DecreaseTeamWin()
         {
-            Draws += 1;
+            Wins -= 1;
+            Score -= 2;
         }
 
-        public void HandleTeamLoss()
+        public void IncreaseTeamDraw()
+        {
+            Draws += 1;
+            Score += 1;
+        }
+
+        public void DecreaseTeamDraw()
+        {
+            Draws -= 1;
+            Score -= 1;
+        }
+
+        public void IncreaseTeamLoss()
         {
             Losses += 1;
         }
 
-        public void AdjustAccidentalTeamWin()
+        public void DecreaseTeamLoss() 
         {
-            //TODO
-            Wins -= 1;
-
+            Losses -= 1;
         }
 
-        //public void SetTeamAndOpponentMatchOutcome(TeamMatchOutcome teamMatchOutcome) 
-        //{
-        //    switch (teamMatchOutcome) 
-        //    {
-        //        case TeamMatchOutcome.Win:
-        //            Wins += 1;
-        //            Score += 2;
-        //            Opponent.Losses += 1;
-        //            break;
-        //        case TeamMatchOutcome.Loss:
-        //            Losses += 1;
-        //            Opponent.Wins += 1;
-        //            break;
-        //    }
-        //}
     }
 }

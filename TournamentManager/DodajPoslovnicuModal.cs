@@ -22,7 +22,6 @@ namespace TournamentManager
                 {
                     selectedCountryId = value;
                     OnPropertyChanged(nameof(SelectedCountryId));
-
                 }
             }
         }

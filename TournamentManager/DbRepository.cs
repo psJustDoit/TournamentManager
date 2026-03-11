@@ -16,7 +16,7 @@ namespace TournamentManager
     {
         private static readonly string _connectionString = "Data Source=database.db";
 
-        public static int AddOffice(string officeName, string officeAddress, int? countryId)
+        public static int AddOffice(string officeName, string? officeAddress, int? countryId)
         {
             int result = 0;
             try
@@ -28,13 +28,12 @@ namespace TournamentManager
                     // Enable foreign keys just in case
                     new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                    string query = @"INSERT INTO Poslovnice (Name, Address, CountryId)
-                                VALUES (@name, @address, @countryId)";
+                    string query = @"INSERT INTO Poslovnice (Name, Address, CountryId) VALUES (@name, @address, @countryId)";
 
                     using (var cmd = new SqliteCommand(query, connection))
                     {
                         cmd.Parameters.AddWithValue("@name", officeName);
-                        cmd.Parameters.AddWithValue("@address", officeAddress);
+                        cmd.Parameters.AddWithValue("@address", officeAddress ?? (object)DBNull.Value);
                         cmd.Parameters.AddWithValue("@countryId", countryId);
 
                         result = cmd.ExecuteNonQuery();
@@ -68,7 +67,7 @@ namespace TournamentManager
                 using var cmd = new SqliteCommand(query, connection);
 
                 cmd.Parameters.AddWithValue("@name", officeToEdit.Name);
-                cmd.Parameters.AddWithValue("@address", officeToEdit.Address);
+                cmd.Parameters.AddWithValue("@address", officeToEdit.Address ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@countryId", officeToEdit.CountryId);
                 cmd.Parameters.AddWithValue("@id", officeToEdit.Id);
 
@@ -213,7 +212,7 @@ namespace TournamentManager
                     {
                         Id = reader.GetInt32(reader.GetOrdinal("OfficeId")),
                         Name = reader.GetString(reader.GetOrdinal("OfficeName")),
-                        Address = reader.GetString(reader.GetOrdinal("OfficeAddress")),
+                        Address = reader.IsDBNull(reader.GetOrdinal("OfficeAddress")) ? null : reader.GetString(reader.GetOrdinal("OfficeAddress")),
                         CountryId = countryId
                     });
                 }
