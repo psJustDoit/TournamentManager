@@ -24,11 +24,12 @@ namespace TournamentManager
         public AzurirajTimModal(Team team)
         {
             _team = team;
-            _teamCopy = new Team(_team.TeamId, _team.Name, _team.City) 
+            _teamCopy = new Team(_team.TeamId, _team.Name, _team.IsDummyTeam, _team.City) 
             {
                 Wins = _team.Wins,
                 Losses = _team.Losses,
                 Score = _team.Score,
+                IsDummyTeam = _team.IsDummyTeam,
             };
 
             InitializeComponent();

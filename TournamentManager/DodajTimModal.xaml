@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         Title="Dodaj tim" Height="300" Width="400"
         WindowStartupLocation="CenterOwner">
+    
     <StackPanel  Background="{StaticResource PrimaryBackgroundColor}" Orientation="Vertical">
-        <Label HorizontalAlignment="Center" Content="Ime tima:" Foreground="{StaticResource PrimaryFontColor}"/>
+        <Label HorizontalAlignment="Center" Content="Ime tima: " Foreground="{StaticResource PrimaryFontColor}"/>
+        <Label HorizontalAlignment="Center" Content="(obavezno)" Foreground="PaleVioletRed" FontSize="10"/>
          <TextBox Width="200"  x:Name="TeamNameTextbox"
                   Height="30"
                   Margin="10"/>
@@ -26,6 +28,7 @@
              <Button Content="Dodaj"
                  x:Name="AddTeamButton"
                  Click="AddTeam_Click"
+                 IsDefault="True"
                  Background="Transparent"
                  BorderThickness="0"
                  Foreground="{StaticResource PrimaryFontColor}"

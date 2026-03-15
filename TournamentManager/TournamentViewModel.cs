@@ -106,11 +106,11 @@ namespace TournamentManager.ViewModels
             set { _losersBracket = value; OnPropertyChanged(nameof(LosersBracket)); }
         }
 
-        private ObservableCollection<TeamPairing> _firstRoundPairings = new ObservableCollection<TeamPairing>();
-        public ObservableCollection<TeamPairing> FirstRoundPairings
+        private ObservableCollection<TeamPairing> _teamPairings = new ObservableCollection<TeamPairing>();
+        public ObservableCollection<TeamPairing> TeamPairings
         {
-            get => _firstRoundPairings;
-            set { _firstRoundPairings = value; OnPropertyChanged(nameof(FirstRoundPairings)); }
+            get => _teamPairings;
+            set { _teamPairings = value; OnPropertyChanged(nameof(TeamPairings)); }
         }
 
         public TournamentViewModel()
@@ -128,12 +128,10 @@ namespace TournamentManager.ViewModels
                     // Pair with dummy team if there are no available teams
                     if(!AllTeams.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any())
                     {
-                        dummyTeamCount += 1;
-                        NextTeamId += 1;
-                        var dummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", null);
+                        var dummyTeam = CreateDummyTeam();
                         team.Opponent = dummyTeam;
                         dummyTeam.Opponent = team;
-                        FirstRoundPairings.Add(new TeamPairing(team, dummyTeam));
+                        TeamPairings.Add(new TeamPairing(team, dummyTeam));
                     }
                     else
                     {
@@ -143,110 +141,106 @@ namespace TournamentManager.ViewModels
                         var teamToPair = listOfPossibleOpponents[randomTeamPickIndex];
                         team.Opponent = teamToPair;
                         teamToPair.Opponent = team;
-                        FirstRoundPairings.Add(new TeamPairing(team, teamToPair));
+                        TeamPairings.Add(new TeamPairing(team, teamToPair));
                         teamsNotYetPaired = teamsNotYetPaired.Where(x => x.Opponent == null).ToList();
                     }
                 }
             }
         }
 
+        public void IncrementRound()
+        {
+            RoundCount += 1;
+        }
 
-        public void MatchmakeTeams(List<Team> teamBracket, List<Team> draws, List<Team> newlyAddedTeams, bool isWinnersBracket)
+        public void MatchmakeTeams()
         {      
-            var teamsNotYetPaired = teamBracket;
-            foreach(var team in teamBracket.OrderByDescending(x => x.Score))
+            foreach(var team in AllTeams)
             {
-                Team opponentTeam = null;
+                Team? opponent = null;
+                var possibleOpponents = AllTeams.Where(t => t.TeamId != team.TeamId)
+                    .Where(t => t.Opponent == null)
+                    .Where(t => t.IsDraw == true)
+                    .Where(t => t.IsNewTeam == true)
+                    .Where(t => !t.IsDummyTeam)
+                    .Where(t => !team.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId));
 
-                if(team.Opponent == null)
+                if(team.IsWinner == true)
                 {
-                    if(!teamBracket.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any() && !draws.Any())
+                    possibleOpponents = possibleOpponents.Where(t => t.IsWinner == true);
+                }
+
+                if (team.IsLoser == true)
+                {
+                    possibleOpponents = possibleOpponents.Where(t => t.IsLoser == true);
+                }
+
+                // Find team with smallest score difference to current team
+                int smallestScoreDifference = 0;
+                foreach(var possibleOpponent in possibleOpponents)
+                {
+                    var scoreDifference = Math.Abs(team.Score -  possibleOpponent.Score);
+                    if(scoreDifference <= smallestScoreDifference)
                     {
-                        if (draws.Any())
-                        {
-                            // If team was not paired from a team in their bracket, try pairing with a team who had a draw 
-                            opponentTeam = draws.First();
-                            team.Opponent = opponentTeam;
-                            opponentTeam = team;
-                            draws.RemoveAt(0);
-                        }
-                        else if (newlyAddedTeams.Any())
-                        {
-                            // If team was not paired from a team in their bracket and there was no teams with draw results, try pairing with a newly added team
-                            opponentTeam = draws.First();
-                            team.Opponent = opponentTeam;
-                            opponentTeam = team;
-                            newlyAddedTeams.RemoveAt(0);
-                        }
-                        else
-                        {
-                            // Pair with dummy team if no other opponents are found
-                            dummyTeamCount += 1;
-                            NextTeamId += 1;
-                            var opponentDummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", true, null);
-                            team.Opponent = opponentDummyTeam;
-                            opponentDummyTeam.Opponent = team;
-                            opponentTeam = opponentDummyTeam;
-                        }                          
-                    }
-                    else
-                    {
-                        var possibleOpponents = teamsNotYetPaired
-                            .Where(x => x.TeamId != team.TeamId)
-                            .Where(x => !team.TeamsPlayedWith.Select(t => t.TeamId).Contains(x.TeamId))
-                            .Where(x => !x.IsDummyTeam)
-                            .ToList();
-
-                        Team? teamWithSmallestScoreDiff = null;
-                        int smallestScoreDiff = 0;
-                        // Find team with closest score to matchmake with
-                        foreach (var possibleOpponent in possibleOpponents)
-                        {
-                            var scoreDiff = Math.Abs(possibleOpponent.Score - team.Score);
-                            if (scoreDiff <= smallestScoreDiff)
-                            {
-                                smallestScoreDiff = scoreDiff;
-                                teamWithSmallestScoreDiff = possibleOpponent;
-                            }
-                        }
-
-                        team.Opponent = teamWithSmallestScoreDiff;
-                        teamWithSmallestScoreDiff.Opponent = team;
-                        opponentTeam = teamWithSmallestScoreDiff;
-
-                        // Reset match outcome values for both teams
-                        team.IsWinner = null;
-                        team.IsLoser = null;
-                        team.IsDraw = null;
-
-                        opponentTeam.IsWinner = null;
-                        opponentTeam.IsLoser = null;
-                        opponentTeam.IsDraw = null;
-
-                        teamsNotYetPaired = teamsNotYetPaired.Where(x => x.Opponent == null).ToList();
-                    }
-
-                    if (isWinnersBracket)
-                    {
-                        WinnersBracket.Add(new TeamPairing(team, opponentTeam));
-                    }
-                    else
-                    {
-                        LosersBracket.Add(new TeamPairing(team, opponentTeam));
+                        opponent = possibleOpponent;
+                        smallestScoreDifference = scoreDifference;
                     }
                 }
 
-                if (!teamsNotYetPaired.Any())
+                if(opponent == null)
                 {
-                    return;
+                    if(!AllTeams.Where(t => t.IsDummyTeam == true).Any())
+                    {
+                        var dummyTeam = CreateDummyTeam();
+                        opponent = dummyTeam;
+                    }
+                    else
+                    {
+                        opponent = AllTeams.Where(t => t.IsDummyTeam == true).FirstOrDefault();
+                    }
                 }
-            }
+
+                team.Opponent = opponent;
+                opponent.Opponent = team;
+
+                team.IsWinner = null;
+                team.IsLoser = null;
+                team.IsDraw = null;
+
+                opponent.IsWinner = null;
+                opponent.IsLoser = null;
+                opponent.IsDraw = null;
+
+                if(opponent.IsNewTeam == true)
+                {
+                    opponent.IsNewTeam = false;
+                }
+
+                if (team.IsNewTeam == true) 
+                {
+                    team.IsNewTeam = false;
+                }
+                
+                var teamPair = new TeamPairing(team, opponent);
+
+                TeamPairings.Add(teamPair);
+            }         
+          
         }
 
         public void SortTeamsByScoreDescending()
         {
             var sortedList = new ObservableCollection<Team>(AllTeams.OrderByDescending(t => t.Score));
             AllTeams = sortedList;
+        }
+
+        public Team CreateDummyTeam()
+        {
+            dummyTeamCount += 1;
+            NextTeamId += 1;
+            var dummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", true);
+            AllTeams.Add(dummyTeam);
+            return dummyTeam;
         }
 
 

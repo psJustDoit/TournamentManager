@@ -10,8 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\left.png" />
     <None Remove="Icons\plus.png" />
     <None Remove="Icons\poslovnice.png" />
+    <None Remove="Icons\right.png" />
     <None Remove="Icons\runde.png" />
     <None Remove="Icons\timovi.png" />
   </ItemGroup>
@@ -23,8 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\left.png" />
     <Resource Include="Icons\plus.png" />
     <Resource Include="Icons\poslovnice.png" />
+    <Resource Include="Icons\right.png" />
     <Resource Include="Icons\runde.png" />
     <Resource Include="Icons\timovi.png" />
   </ItemGroup>

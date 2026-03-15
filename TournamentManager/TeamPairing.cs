@@ -1,20 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace TournamentManager
 {
-    public class TeamPairing
+    public class TeamPairing : INotifyPropertyChanged
     {
-        public Team Team1 { get; set; }
-        public Team Team2 { get; set; }
+        private Team _team1 { get; set; }
+        public Team Team1
+        {
+            get => _team1;
+            set { _team1 = value; OnPropertyChanged(nameof(Team1)); }
+        }
+
+        private Team _team2 { get; set; }
+        public Team Team2
+        {
+            get => _team2;
+            set { _team2 = value; OnPropertyChanged(nameof(Team2)); }
+        }
 
         public TeamPairing(Team team1, Team team2) 
         {
-            Team1 = team1;
-            Team2 = team2;
+            _team1 = team1;
+            _team2 = team2;
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string name) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

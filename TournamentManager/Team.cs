@@ -88,8 +88,15 @@ namespace TournamentManager
             set { _isDummyTeam = value; }
         }
 
-        public List<Team> TeamsPlayedWith { get; set; } = new List<Team>();
-        public List<Team> TeamsLostAgainst { get; set; } = new List<Team>();
+        private bool _isNewTeam;
+        public bool IsNewTeam
+        {
+            get => _isNewTeam;
+            set { _isNewTeam = value; }
+        }
+
+        public List<int> TeamsIdsAlreadyPlayedWith{ get; set; } = new List<int>();
+        public List<int> TeamsIdsLostAgainst { get; set; } = new List<int>();
 
         public Team(int teamId, string name, bool isDummyTeam, string? city = null)
         {
