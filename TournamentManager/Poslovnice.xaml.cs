@@ -28,11 +28,7 @@ namespace TournamentManager
         public ObservableCollection<DrzaveViewModel> DrzaveToDisplay
         {
             get => drzaveToDisplay;
-            set
-            {
-                drzaveToDisplay = value;
-                OnPropertyChanged(nameof(DrzaveToDisplay));
-            }
+            set { drzaveToDisplay = value; OnPropertyChanged(nameof(DrzaveToDisplay)); }
         }
 
         public Poslovnice()

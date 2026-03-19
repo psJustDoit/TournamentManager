@@ -9,15 +9,15 @@ namespace TournamentManager
 {
     public class TeamPairing : INotifyPropertyChanged
     {
-        private Team _team1 { get; set; }
-        public Team Team1
+        private Team? _team1 { get; set; }
+        public Team? Team1
         {
             get => _team1;
             set { _team1 = value; OnPropertyChanged(nameof(Team1)); }
         }
 
-        private Team _team2 { get; set; }
-        public Team Team2
+        private Team? _team2 { get; set; }
+        public Team? Team2
         {
             get => _team2;
             set { _team2 = value; OnPropertyChanged(nameof(Team2)); }

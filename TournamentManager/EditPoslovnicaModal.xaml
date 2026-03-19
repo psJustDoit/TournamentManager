@@ -31,15 +31,17 @@
               Height="30"
               Margin="10"/>
 
-            <Border BorderThickness="1" Width="100"
+            <Border BorderThickness="2" Width="100"
                 Background="{StaticResource ButtonBackgroundColor}"
                 BorderBrush="{StaticResource PrimaryFontColor}"
-                CornerRadius="1"
+                CornerRadius="5"
                 Margin="0, 5, 0, 0">
                 <Button Content="Edit"
                     Width="100"
                     x:Name="AddOfficeButton"
+                    FontSize="20"
                     Click="EditPoslovnicu_Click"
+                    BorderThickness="0"
                     Background="Transparent"
                     Foreground="{StaticResource PrimaryFontColor}"
                     FontWeight="Bold"/>

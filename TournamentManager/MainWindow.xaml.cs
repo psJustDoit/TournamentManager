@@ -42,6 +42,11 @@ namespace TournamentManager
             MainContentFrame.Navigate(App.ServiceProvider.GetRequiredService<Turnir>());
         }
 
+        private void Navigation_RoundHistoryClick(object sender, RoutedEventArgs e)
+        {
+            MainContentFrame.Navigate(App.ServiceProvider.GetRequiredService<RoundHistory>());
+        }
+
         private void MainWindow_Close(object sender, CancelEventArgs e) 
         {
             var result = System.Windows.MessageBox.Show("Sigurno želite izaći?","Exit", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Question);

@@ -83,7 +83,7 @@
         <Label Width="200" x:Name="ScoreTextbox" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="1"
                Foreground="{StaticResource PrimaryFontColor}"
                HorizontalContentAlignment="Center"
-               Content="{Binding Score}"
+               Content="{Binding TeamTournamentScore}"
                Height="30"
                Margin="10"/>
 

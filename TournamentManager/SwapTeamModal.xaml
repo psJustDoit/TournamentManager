@@ -1,0 +1,42 @@
+﻿<Window x:Class="TournamentManager.SwapTeamModal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TournamentManager"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Title="SwapTeam" Height="450" Width="800">
+    <Grid Background="{StaticResource PrimaryBackgroundColor}">
+        <StackPanel Orientation="Vertical" Margin="0, 20, 0, 0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock FontSize="20" Foreground="{StaticResource PrimaryFontColor}" Text="Tim:" Margin="0, 0, 10, 0" />
+                <TextBlock FontSize="20" Foreground="{StaticResource PrimaryFontColor}" Text="{Binding TeamToSwap.Name, RelativeSource={RelativeSource AncestorType=Window}}" />
+            </StackPanel>
+
+            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Margin="0, 20, 0 ,0" Foreground="{StaticResource PrimaryFontColor}" Text="Zamijeni sa:" />
+            
+            <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center"
+                  x:Name="TeamSwapSelect" ItemsSource="{Binding .}"
+                  Width="150"
+                  SelectedItem="{Binding SelectedTeamId}"
+                  Margin="0, 20, 0 , 0"
+                  SelectionChanged="Team_SelectionChanged"
+                  DisplayMemberPath="Name"/>
+            <Border Background="{StaticResource ButtonBackgroundColor}" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2" CornerRadius="3"
+                    Width="150" Margin="0, 20, 0, 0"
+                    Height="50">
+                <Button Content="OK"
+                 x:Name="ButtonOK"
+                 Click="ButtonOK_Click"
+                 FontSize="20"
+                 IsDefault="True"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Foreground="{StaticResource PrimaryFontColor}"
+                 FontWeight="Bold"/>
+            </Border>
+            
+        </StackPanel>
+    </Grid>
+</Window>

@@ -36,12 +36,14 @@ namespace TournamentManager
         private void ConfigureServices(ServiceCollection services)
         {
             services.AddSingleton<TournamentViewModel>();
+            services.AddSingleton<RoundHistoryViewModel>();
 
             // Register pages
             services.AddSingleton<MainWindow>();
             services.AddTransient<Poslovnice>();
             services.AddTransient<Timovi>();
             services.AddTransient<Turnir>();
+            services.AddTransient<RoundHistory>();
 
             ServiceProvider = services.BuildServiceProvider();
         }

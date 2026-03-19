@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +24,7 @@ namespace TournamentManager
     public partial class Timovi : Page
     {
         private readonly TournamentViewModel _tournamentViewModel;
+
         public Timovi(TournamentViewModel tournamentViewModel)
         {
             _tournamentViewModel = tournamentViewModel;
@@ -41,12 +44,12 @@ namespace TournamentManager
             modal.ShowDialog();
         }
 
-        private void EditTeam_Click(Object sender, RoutedEventArgs e)
+        private void TeamUpdate_Click(Object sender, RoutedEventArgs e)
         {
             var menuItem = sender as MenuItem;
             var contextMenu = menuItem.Parent as ContextMenu;
-            var button = contextMenu.PlacementTarget as Button;
-            var teamToUpdate = button.DataContext as Team;
+            var teamName = contextMenu.PlacementTarget as TextBlock;
+            var teamToUpdate = teamName.DataContext as Team;
 
             if (teamToUpdate == null)
             {
@@ -64,31 +67,31 @@ namespace TournamentManager
             }
         }
 
-        private void DeleteTeam_Click(Object sender, RoutedEventArgs e)
-        {
-            var menuItem = sender as MenuItem;
-            var contextMenu = menuItem.Parent as ContextMenu;
-            var button = contextMenu.PlacementTarget as Button;
-            var teamToDelete = button.DataContext as Team;
+        //private void DeleteTeam_Click(Object sender, RoutedEventArgs e)
+        //{
+        //    var menuItem = sender as MenuItem;
+        //    var contextMenu = menuItem.Parent as ContextMenu;
+        //    var button = contextMenu.PlacementTarget as Button;
+        //    var teamToDelete = button.DataContext as Team;
 
-            if(teamToDelete == null)
-            {
-                return;
-            }
+        //    if(teamToDelete == null)
+        //    {
+        //        return;
+        //    }
 
-            var result = MessageBox.Show($"Izbrisati tim {teamToDelete.Name}?", "Delete", MessageBoxButton.YesNo);
+        //    var result = MessageBox.Show($"Izbrisati tim {teamToDelete.Name}?", "Delete", MessageBoxButton.YesNo);
 
-            switch (result) 
-            {
-                case MessageBoxResult.Yes:
-                    _tournamentViewModel.AllTeams.Remove(teamToDelete);
-                    _tournamentViewModel.AllTeams.OrderByDescending(x => x.Score);
-                    break;
-                case MessageBoxResult.No:
-                    break;
-                default:
-                    break;
-            }
-        }
+        //    switch (result) 
+        //    {
+        //        case MessageBoxResult.Yes:
+        //            _tournamentViewModel.AllTeams.Remove(teamToDelete);
+        //            _tournamentViewModel.AllTeams.OrderByDescending(x => x.TeamTournamentScore);
+        //            break;
+        //        case MessageBoxResult.No:
+        //            break;
+        //        default:
+        //            break;
+        //    }
+        //}
     }
 }

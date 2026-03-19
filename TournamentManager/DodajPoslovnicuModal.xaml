@@ -38,6 +38,7 @@
                 Click="DodajPoslovnicu_Click"
                 BorderThickness="0"
                 IsDefault="True"
+                FontSize="20"
                 Background="Transparent"
                 Foreground="{StaticResource PrimaryFontColor}"
                 FontWeight="Bold"/>

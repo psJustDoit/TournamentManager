@@ -39,11 +39,22 @@ namespace TournamentManager
             set { _draws = value; OnPropertyChanged(nameof(Draws)); }
         }
 
-        private int _score;
-        public int Score 
+        // Total team score throughout the tournament
+        private int _teamTournamentScore;
+        public int TeamTournamentScore 
         {
-            get => _score; 
-            set { _score = value; OnPropertyChanged(nameof(Score)); }
+            get => _teamTournamentScore; 
+            set { _teamTournamentScore = value; OnPropertyChanged(nameof(TeamTournamentScore)); }
+        }
+
+        // Team score difference
+        // Calculated for games such as CS2 where 1 match is played in rounds
+        // So match outcome looks something like 6-3, so score differce would be 3 or -3 for that round (depending if the team won more or lost more)
+        private int? _scoreDifference;
+        public int? ScoreDifference
+        {
+            get => _scoreDifference;
+            set { _scoreDifference = value; OnPropertyChanged(nameof(ScoreDifference)); }
         }
 
         private string? _city;
@@ -95,8 +106,17 @@ namespace TournamentManager
             set { _isNewTeam = value; }
         }
 
+        // Used to calculate score difference
+        // Entry when the match for both teams is decided
+        private int? _gameMatchScore;
+        public int? GameMatchScore
+        {
+            get => _gameMatchScore;
+            set { _gameMatchScore = value; }
+        }
+
         public List<int> TeamsIdsAlreadyPlayedWith{ get; set; } = new List<int>();
-        public List<int> TeamsIdsLostAgainst { get; set; } = new List<int>();
+        public List<int> TeamIdsWonAgainst { get; set; } = new List<int>();
 
         public Team(int teamId, string name, bool isDummyTeam, string? city = null)
         {
@@ -106,7 +126,9 @@ namespace TournamentManager
             Wins = 0;
             Losses = 0;
             Draws = 0;
-            Score = 0;
+            GameMatchScore = null;
+            ScoreDifference = 0;
+            TeamTournamentScore = 0;
             IsDummyTeam = isDummyTeam;
             Opponent = null;
         }
@@ -118,25 +140,25 @@ namespace TournamentManager
         public void IncreaseTeamWin()
         {
             Wins += 1;
-            Score += 2;
+            TeamTournamentScore += 2;
         }
 
         public void DecreaseTeamWin()
         {
             Wins -= 1;
-            Score -= 2;
+            TeamTournamentScore -= 2;
         }
 
         public void IncreaseTeamDraw()
         {
             Draws += 1;
-            Score += 1;
+            TeamTournamentScore += 1;
         }
 
         public void DecreaseTeamDraw()
         {
             Draws -= 1;
-            Score -= 1;
+            TeamTournamentScore -= 1;
         }
 
         public void IncreaseTeamLoss()
@@ -147,6 +169,21 @@ namespace TournamentManager
         public void DecreaseTeamLoss() 
         {
             Losses -= 1;
+        }
+
+        public void ResetGameMatchScore()
+        {
+            GameMatchScore = null;
+        }
+
+        public void SetScoreDifference(Team opponent)
+        {
+            if(opponent == null)
+            {
+                return;
+            }
+
+            ScoreDifference += GameMatchScore - opponent.GameMatchScore;
         }
 
     }

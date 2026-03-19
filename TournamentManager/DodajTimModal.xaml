@@ -28,6 +28,7 @@
              <Button Content="Dodaj"
                  x:Name="AddTeamButton"
                  Click="AddTeam_Click"
+                 FontSize="20"
                  IsDefault="True"
                  Background="Transparent"
                  BorderThickness="0"

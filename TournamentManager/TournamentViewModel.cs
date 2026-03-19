@@ -5,11 +5,18 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace TournamentManager.ViewModels
 {
+    //TODO: Add round histories
+    //TODO: Rework tournament page - isti timovi u jedan kvadratic -> ne 1 v 1
+    //TODO: add manually entering rounds from 5 - 15
+    //TODO: add score difference 
     public class TournamentViewModel : INotifyPropertyChanged
     {
+        private readonly RoundHistoryViewModel _roundHistoryViewModel;
+
         private uint dummyTeamCount = 0;
         private List<Team> _winners = new List<Team>();
         public List<Team> Winners
@@ -34,6 +41,25 @@ namespace TournamentManager.ViewModels
         {
             get => _newlyAddedTeams;
         }
+
+        private List<Team> _dummyTeams = new List<Team>();
+        public List<Team> DummyTeams
+        {
+            get => _dummyTeams;
+        }
+
+        private List<TournamentType> _tournamentType = new List<TournamentType>();
+        public List<TournamentType> TournamentType
+        {
+            get => _tournamentType;
+        }
+
+        //private List<TeamScore> _scoreboard = new List<TeamScore>();
+        //public List<TeamScore> Scoreboard
+        //{
+        //    get => _scoreboard;
+        //    set => _scoreboard = value;
+        //}
 
         private int nextTeamId = 0;
         public int NextTeamId
@@ -77,33 +103,18 @@ namespace TournamentManager.ViewModels
             set { _roundEndDateTime = value; OnPropertyChanged(nameof(RoundEndDateTime)); }
         }
 
-        private bool _isViewingWinnersBracket = true;
-        public bool IsViewingWinnersBracket
+        private TournamentType _selectedTournamentType;
+        public TournamentType SelectedTournamentType
         {
-            get { return _isViewingWinnersBracket; }
-            set { _isViewingWinnersBracket = value; }
+            get { return _selectedTournamentType; }
+            set { _selectedTournamentType = value;  }
         }
-
 
         private ObservableCollection<Team> _allTeams = new ObservableCollection<Team>();
         public ObservableCollection<Team> AllTeams
         {
             get => _allTeams;
             set { _allTeams = value; OnPropertyChanged(nameof(AllTeams)); }
-        }
-
-        private ObservableCollection<TeamPairing> _winnersBracket = new ObservableCollection<TeamPairing>(); 
-        public ObservableCollection<TeamPairing> WinnersBracket 
-        { 
-            get => _winnersBracket; 
-            set { _winnersBracket = value; OnPropertyChanged(nameof(WinnersBracket)); } 
-        }
-
-        private ObservableCollection<TeamPairing> _losersBracket = new ObservableCollection<TeamPairing>();
-        public ObservableCollection<TeamPairing> LosersBracket
-        {
-            get => _losersBracket;
-            set { _losersBracket = value; OnPropertyChanged(nameof(LosersBracket)); }
         }
 
         private ObservableCollection<TeamPairing> _teamPairings = new ObservableCollection<TeamPairing>();
@@ -113,20 +124,30 @@ namespace TournamentManager.ViewModels
             set { _teamPairings = value; OnPropertyChanged(nameof(TeamPairings)); }
         }
 
-        public TournamentViewModel()
+        public TournamentViewModel(RoundHistoryViewModel roundHistoryViewModel)
         {
+            TournamentType.Add(new TournamentType(1, "CS 5v5"));
+            TournamentType.Add(new TournamentType(2, "CS Wingman"));
+            TournamentType.Add(new TournamentType(3, "Valorant 5v5"));
+            TournamentType.Add(new TournamentType(4, "Valorant Skirmish"));
+            TournamentType.Add(new TournamentType(5, "Siege 5v5"));
+            TournamentType.Add(new TournamentType(6, "LoL 5v5"));
+            TournamentType.Add(new TournamentType(7, "LoL ARAM"));
+            TournamentType.Add(new TournamentType(8, "Fortnite"));
+            TournamentType.Add(new TournamentType(9, "PUBG Battle Royal"));
 
+            _roundHistoryViewModel = roundHistoryViewModel;
         }
 
         public void MatchmakeTeamsFirstRound()
         {
             var teamsNotYetPaired = AllTeams.ToList();
-            foreach (var team in AllTeams) 
+            foreach (var team in AllTeams)
             {
-                if(team.Opponent == null)
+                if (team.Opponent == null)
                 {
                     // Pair with dummy team if there are no available teams
-                    if(!AllTeams.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any())
+                    if (!AllTeams.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any())
                     {
                         var dummyTeam = CreateDummyTeam();
                         team.Opponent = dummyTeam;
@@ -153,51 +174,57 @@ namespace TournamentManager.ViewModels
             RoundCount += 1;
         }
 
-        public void MatchmakeTeams()
-        {      
-            foreach(var team in AllTeams)
+        public void  MatchmakeTeamsNext()
+        {
+            foreach (var team in AllTeams)
             {
+                if(team.Opponent != null)
+                {
+                    continue;
+                }
+
                 Team? opponent = null;
                 var possibleOpponents = AllTeams.Where(t => t.TeamId != team.TeamId)
                     .Where(t => t.Opponent == null)
-                    .Where(t => t.IsDraw == true)
-                    .Where(t => t.IsNewTeam == true)
-                    .Where(t => !t.IsDummyTeam)
                     .Where(t => !team.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId));
 
-                if(team.IsWinner == true)
+                if (team.IsWinner == true)
                 {
-                    possibleOpponents = possibleOpponents.Where(t => t.IsWinner == true);
+                    possibleOpponents = possibleOpponents.Where(t => t.IsDraw == true || t.IsNewTeam == true || t.IsWinner == true).ToList();
                 }
 
                 if (team.IsLoser == true)
                 {
-                    possibleOpponents = possibleOpponents.Where(t => t.IsLoser == true);
+                    possibleOpponents = possibleOpponents.Where(t => t.IsDraw == true || t.IsNewTeam == true || t.IsLoser == true).ToList();
                 }
 
                 // Find team with smallest score difference to current team
-                int smallestScoreDifference = 0;
-                foreach(var possibleOpponent in possibleOpponents)
+                if (possibleOpponents.Any())
                 {
-                    var scoreDifference = Math.Abs(team.Score -  possibleOpponent.Score);
-                    if(scoreDifference <= smallestScoreDifference)
+                    int smallestScoreDifference = Math.Abs(team.TeamTournamentScore - possibleOpponents.First().TeamTournamentScore);
+                    opponent = possibleOpponents.First();
+
+                    foreach (var possibleOpponent in possibleOpponents)
                     {
-                        opponent = possibleOpponent;
-                        smallestScoreDifference = scoreDifference;
+                        var scoreDifference = Math.Abs(team.TeamTournamentScore - possibleOpponent.TeamTournamentScore);
+                        if (scoreDifference <= smallestScoreDifference)
+                        {
+                            opponent = possibleOpponent;
+                            smallestScoreDifference = scoreDifference;
+                        }
                     }
                 }
 
-                if(opponent == null)
+                if (opponent == null)
                 {
-                    if(!AllTeams.Where(t => t.IsDummyTeam == true).Any())
+                    if(!DummyTeams.Any() || !DummyTeams.Where(dt => dt.Opponent == null).Any())
                     {
-                        var dummyTeam = CreateDummyTeam();
-                        opponent = dummyTeam;
+                        opponent = CreateDummyTeam();
                     }
                     else
                     {
-                        opponent = AllTeams.Where(t => t.IsDummyTeam == true).FirstOrDefault();
-                    }
+                        opponent = DummyTeams.Where(dt => dt.Opponent == null).FirstOrDefault();
+                    }  
                 }
 
                 team.Opponent = opponent;
@@ -206,31 +233,31 @@ namespace TournamentManager.ViewModels
                 team.IsWinner = null;
                 team.IsLoser = null;
                 team.IsDraw = null;
+                team.ResetGameMatchScore();
+                
 
                 opponent.IsWinner = null;
                 opponent.IsLoser = null;
                 opponent.IsDraw = null;
+                opponent.ResetGameMatchScore();
 
-                if(opponent.IsNewTeam == true)
+                if (opponent.IsNewTeam == true)
                 {
                     opponent.IsNewTeam = false;
                 }
 
-                if (team.IsNewTeam == true) 
+                if (team.IsNewTeam == true)
                 {
                     team.IsNewTeam = false;
                 }
-                
-                var teamPair = new TeamPairing(team, opponent);
 
-                TeamPairings.Add(teamPair);
-            }         
-          
+                TeamPairings.Add(new TeamPairing(team, opponent));
+            }
         }
 
         public void SortTeamsByScoreDescending()
         {
-            var sortedList = new ObservableCollection<Team>(AllTeams.OrderByDescending(t => t.Score));
+            var sortedList = new ObservableCollection<Team>(AllTeams.OrderByDescending(t => t.TeamTournamentScore));
             AllTeams = sortedList;
         }
 
@@ -239,13 +266,14 @@ namespace TournamentManager.ViewModels
             dummyTeamCount += 1;
             NextTeamId += 1;
             var dummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", true);
-            AllTeams.Add(dummyTeam);
+            DummyTeams.Add(dummyTeam);
             return dummyTeam;
         }
 
+        
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged(string name) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

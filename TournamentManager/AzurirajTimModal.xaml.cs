@@ -28,7 +28,7 @@ namespace TournamentManager
             {
                 Wins = _team.Wins,
                 Losses = _team.Losses,
-                Score = _team.Score,
+                TeamTournamentScore = _team.TeamTournamentScore,
                 IsDummyTeam = _team.IsDummyTeam,
             };
 
@@ -40,13 +40,13 @@ namespace TournamentManager
         private void IncrementTeamWins_Click(object sender, RoutedEventArgs e)
         {
             _teamCopy.Wins += 1;
-            _teamCopy.Score += 2;
+            _teamCopy.TeamTournamentScore += 2;
         }
 
         private void SubtractTeamWins_Click(object sender, RoutedEventArgs e)
         {
             _teamCopy.Wins -= 1;
-            _teamCopy.Score -= 2;
+            _teamCopy.TeamTournamentScore -= 2;
         }
 
         private void IncrementTeamLosses_Click(object sender, RoutedEventArgs e)
@@ -68,7 +68,7 @@ namespace TournamentManager
             _team.City = _teamCopy.City;
             _team.Wins = _teamCopy.Wins;
             _team.Losses = _teamCopy.Losses;
-            _team.Score = _teamCopy.Score;
+            _team.TeamTournamentScore = _teamCopy.TeamTournamentScore;
 
             DialogResult = true;
         }
