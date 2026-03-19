@@ -9,10 +9,7 @@ using System.Windows.Controls;
 
 namespace TournamentManager.ViewModels
 {
-    //TODO: Add round histories
-    //TODO: Rework tournament page - isti timovi u jedan kvadratic -> ne 1 v 1
     //TODO: add manually entering rounds from 5 - 15
-    //TODO: add score difference 
     public class TournamentViewModel : INotifyPropertyChanged
     {
         private readonly RoundHistoryViewModel _roundHistoryViewModel;
