@@ -40,9 +40,9 @@ namespace TournamentManager
 
             // Register pages
             services.AddSingleton<MainWindow>();
-            services.AddTransient<Poslovnice>();
-            services.AddTransient<Timovi>();
-            services.AddTransient<Turnir>();
+            services.AddTransient<Offices>();
+            services.AddTransient<Teams>();
+            services.AddTransient<Tournament>();
             services.AddTransient<RoundHistory>();
 
             ServiceProvider = services.BuildServiceProvider();
@@ -150,6 +150,11 @@ namespace TournamentManager
                         FOREIGN KEY(TimId) REFERENCES Timovi(Id)
                     );";
 
+                string createLogsTable = @"
+                    CREATE TABLE IF NOT EXISTS Logs (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        LogMessage TEXT NOT NULL);";
+
                 using (var cmd = new SqliteCommand(createPoslovniceTable, connection))
                 { cmd.ExecuteNonQuery(); }
 
@@ -160,6 +165,9 @@ namespace TournamentManager
                 { cmd.ExecuteNonQuery(); }
 
                 using (var cmd = new SqliteCommand(createRundeTable, connection))
+                { cmd.ExecuteNonQuery(); }
+
+                using (var cmd = new SqliteCommand(createLogsTable, connection))
                 { cmd.ExecuteNonQuery(); }
 
                 SeedCountries(connection);
