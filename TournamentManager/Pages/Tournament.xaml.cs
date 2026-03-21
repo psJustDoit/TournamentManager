@@ -12,7 +12,7 @@ namespace TournamentManager
     /// <summary>
     /// Interaction logic for Tournament.xaml
     /// </summary>
-    
+
     public partial class Tournament : Page
     {
         private readonly TournamentViewModel _tournamentViewModel;
@@ -38,7 +38,7 @@ namespace TournamentManager
                 return;
             }
 
-            if(_tournamentViewModel.SelectedTournamentType == null)
+            if (_tournamentViewModel.SelectedTournamentType == null)
             {
                 MessageBox.Show("Nije selektirana igra za turnir", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -65,42 +65,43 @@ namespace TournamentManager
                 return;
             }
 
+            //TODO: Rework to have 2 lists, teams eligible to play and kicked teams then iterate and split if team is kicked
             foreach (var team in _tournamentViewModel.AllTeams)
             {
-                if (team.Opponent != null)
+
+                if (team.IsLoser == true)
                 {
-                    if (team.IsLoser == true)
-                    {
-                        //team.IncreaseTeamLoss();
-                        team.IncreaseTeamLossBy1();
-                    }
+                    //team.IncreaseTeamLoss();
+                    team.IncreaseTeamLossBy1();
+                }
 
-                    if (team.IsWinner == true)
-                    {
-                        team.TeamIdsWonAgainst.Add(team.Opponent.TeamId);
-                        //team.IncreaseTeamWin();
-                        team.IncreaseTeamWinBy1();
-                    }
+                if (team.IsWinner == true)
+                {
+                    //team.IncreaseTeamWin();
+                    team.IncreaseTeamWinBy1();
+                }
 
-                    if (team.IsDraw == true)
-                    {
-                        //team.IncreaseTeamDraw();
-                        team.IncreaseTeamDrawBy1();
-                    }
+                if (team.IsDraw == true)
+                {
+                    //team.IncreaseTeamDraw();
+                    team.IncreaseTeamDrawBy1();
+                }              
 
-                    team.SetScoreDifference(team.Opponent);
-
-                    if(team.Opponent.IsDummyTeam == false)
+                if(team.Opponent != null)
+                {
+                    if (team.Opponent.IsDummyTeam == false)
                     {
                         team.TeamsIdsAlreadyPlayedWith.Add(team.Opponent.TeamId);
                     }
-                    
 
-                    team.Opponent = null;
+                    team.SetScoreDifference(team.Opponent);
+                    team.TeamIdsWonAgainst.Add(team.Opponent.TeamId);
                 }
+
+                team.Opponent = null;
             }
 
-            foreach (var dummy in _tournamentViewModel.DummyTeams) 
+            foreach (var dummy in _tournamentViewModel.DummyTeams)
             {
                 dummy.Opponent = null;
             }
@@ -112,7 +113,7 @@ namespace TournamentManager
             _tournamentViewModel.MatchmakeTeamsNext();
             _tournamentViewModel.IncrementRound();
 
-            _tournamentViewModel.AllTeams = new ObservableCollection<Team>(_tournamentViewModel.AllTeams.OrderByDescending(x => x.TeamTournamentScore));
+            _tournamentViewModel.SortTeamsByScoreDescending();
             UpdateVisibility();
         }
 
@@ -140,7 +141,7 @@ namespace TournamentManager
                 }
 
                 Team? team2 = null;
-                if (teamPairing.Team2 != null) 
+                if (teamPairing.Team2 != null)
                 {
                     team2 = new Team(teamPairing.Team2.TeamId, teamPairing.Team2.Name, teamPairing.Team2.IsDummyTeam, null);
                     team2.IsDraw = teamPairing.Team2.IsDraw;
@@ -165,14 +166,8 @@ namespace TournamentManager
                 teamPairingsHistoryInfo.Add(pairing);
             }
 
-            var currentScoreboard = _tournamentViewModel.AllTeams
-                .OrderByDescending(t => t.TeamTournamentScore)
-                .Select(t => new TeamScore
-                {
-                    Name = t.Name,
-                    TournamentScore = t.TeamTournamentScore,
-                    ScoreDifference = t.ScoreDifference
-                }).ToList();
+            _tournamentViewModel.SortTeamsByScoreDescending();
+            var currentScoreboard = _tournamentViewModel.TeamScoreboardListing.ToList();
 
             roundHistoryInfo.Round = _tournamentViewModel.RoundCount;
             roundHistoryInfo.Scoreboard = currentScoreboard;
@@ -260,16 +255,16 @@ namespace TournamentManager
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is T fe && fe.Tag as string == tag) 
-                { 
-                    return fe; 
+                if (child is T fe && fe.Tag as string == tag)
+                {
+                    return fe;
                 }
-                    
+
                 var result = FindChildByTag<T>(child, tag);
-                if (result != null) 
+                if (result != null)
                 {
                     return result;
-                } 
+                }
             }
 
             return null;
@@ -302,7 +297,7 @@ namespace TournamentManager
                 TournamentTypeSelect.IsEnabled = false;
             }
 
-            if(_tournamentViewModel.RoundCount > 1)
+            if (_tournamentViewModel.RoundCount > 1)
             {
                 Scoreboard.Visibility = Visibility.Visible;
             }
@@ -337,7 +332,7 @@ namespace TournamentManager
             bool? result = modal.ShowDialog();
         }
 
-
+        //TODO: Rework with having additional lists
         private void TeamKick_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -351,13 +346,15 @@ namespace TournamentManager
             {
                 case TeamEnum.Team1:
                     teamToKick = teamPairing?.Team1;
+                    teamPairing.Team1 = null;
                     break;
                 case TeamEnum.Team2:
                     teamToKick = teamPairing?.Team2;
+                    teamPairing.Team2 = null;
                     break;
             }
 
-            if(teamToKick == null || teamToKick.IsDummyTeam == true)
+            if (teamToKick == null || teamToKick.IsDummyTeam == true)
             {
                 return;
             }
@@ -366,28 +363,18 @@ namespace TournamentManager
             if (result == MessageBoxResult.Yes)
             {
                 // Add 1 point to every team who lost against the team being kicked
-                foreach(var teamId in teamToKick.TeamIdsWonAgainst)
+                foreach (var teamId in teamToKick.TeamIdsWonAgainst)
                 {
                     var teamToAddPointTo = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamId).FirstOrDefault();
-                    if(teamToAddPointTo != null)
+                    if (teamToAddPointTo != null)
                     {
                         teamToAddPointTo.IncreaseTeamTournamentScoreBy1();
                     }
                 }
 
-                
-                if (teamToKickPosition == TeamEnum.Team1) 
-                {
-                    teamPairing.Team1 = null;
-                    teamPairing.Team2.Opponent = null;
-                }
-                else
-                {
-                    teamPairing.Team2 = null;
-                    teamPairing.Team1.Opponent = null;
-                }
+                teamToKick.IsKicked = true;
 
-                _tournamentViewModel.AllTeams.Remove(teamToKick);
+                //_tournamentViewModel.AllTeams.Remove(teamToKick);
                 _tournamentViewModel.SortTeamsByScoreDescending();
             }
             else

@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
+﻿using System.Windows;
 using TournamentManager.ViewModels;
 using TournamentManager.Models;
+using TournamentManager.Db;
 
 namespace TournamentManager
 {
@@ -11,11 +11,14 @@ namespace TournamentManager
     public partial class AddTeamModal : Window
     {
         private readonly TournamentViewModel _tournamentViewModel;
+
+        public List<Office> Offices { get; set; }
         public AddTeamModal(TournamentViewModel tournamentViewModel)
         {
-            InitializeComponent();
-
             _tournamentViewModel = tournamentViewModel;
+            Offices = DbRepository.GetAllOffices(); ;
+
+            InitializeComponent();
         }
 
         private void AddTeam_Click(object sender, RoutedEventArgs e)
@@ -34,11 +37,16 @@ namespace TournamentManager
                 return;
             }
 
-            var teamCity = TeamCityTextbox.Text;
-
             _tournamentViewModel.IncrementNextTeamCount();
-            var teamToAdd = new Team(_tournamentViewModel.NextTeamId, teamName, false, teamCity);
 
+            var selectedOffice = OfficeComboBox.SelectedItem as Office;
+            if(selectedOffice == null)
+            {
+                MessageBox.Show("Poslovnica nije odabrana", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var teamToAdd = new Team(_tournamentViewModel.NextTeamId, teamName, false, selectedOffice);
 
 
             if (_tournamentViewModel.RoundCount >= 1)
@@ -46,11 +54,11 @@ namespace TournamentManager
                 teamToAdd.IsNewTeam = true;
             }
 
-            _tournamentViewModel.AllTeams.Add(teamToAdd);
-            _tournamentViewModel.AllTeams = new ObservableCollection<Team>(_tournamentViewModel.AllTeams.OrderByDescending(x => x.TeamTournamentScore));
+            _tournamentViewModel.AddTeam(teamToAdd);
+            _tournamentViewModel.SortTeamsByScoreDescending();
 
             TeamNameTextbox.Text = String.Empty;
-            TeamCityTextbox.Text = String.Empty;
+            OfficeComboBox.SelectedItem = null;
         }
     }
 }

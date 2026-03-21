@@ -10,42 +10,86 @@
 
 
     <Grid Background="{StaticResource PrimaryBackgroundColor}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50*" />
-            <ColumnDefinition Width="25*" />
-            <ColumnDefinition Width="25*" />
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="10*"/>
             <RowDefinition Height="75*"/>
             <RowDefinition Height="15*"/>
         </Grid.RowDefinitions>
 
-        <!-- Row 0: Headers -->
-        <Border Grid.Row="0" Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 2, 2, 0">
-            <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">Timovi</Label>
-        </Border>
+        <!-- Row 0: Header -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10*" />
+                <ColumnDefinition Width="40*" />
+                <ColumnDefinition Width="25*" />
+                <ColumnDefinition Width="25*" />
+            </Grid.ColumnDefinitions>
+            
+            <Border Grid.Row="0" Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 2, 2, 0">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">#</Label>
+            </Border>
+            <Border Grid.Row="0" Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 2, 2, 0">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">Timovi</Label>
+            </Border>
 
-        <Border Grid.Row="0" Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 2, 2, 0">
-            <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">Score</Label>
-        </Border>
+            <Border Grid.Row="0" Grid.Column="2" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 2, 2, 0">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">Score</Label>
+            </Border>
 
-        <Border Grid.Row="0" Grid.Column="2" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 2, 2, 0">
-            <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">Score diff</Label>
-        </Border>
+            <Border Grid.Row="0" Grid.Column="3" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 2, 2, 0">
+                <Label HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24" Foreground="{StaticResource PrimaryFontColor}">Score diff</Label>
+            </Border>
+        </Grid>
+        
+        <Border Grid.Row="1" BorderThickness="0, 2, 0, 2" BorderBrush="{StaticResource PrimaryFontColor}">
+            <!-- Row 1: Team listing -->
+            <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="0, 10, 0, 0">
+                <ItemsControl ItemsSource="{Binding TeamScoreboardListing}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="10*" />
+                                    <ColumnDefinition Width="40*" />
+                                    <ColumnDefinition Width="25*" />
+                                    <ColumnDefinition Width="25*" />
+                                </Grid.ColumnDefinitions>
 
-        <!-- Row 1: Team listing -->
-        <Border Grid.Row="1" Grid.ColumnSpan="3"  BorderThickness="0, 2, 0, 2" BorderBrush="{StaticResource PrimaryFontColor}">
-            <ScrollViewer Grid.ColumnSpan="3"  VerticalScrollBarVisibility="Hidden">
-                <Grid>
+                                <!--<Border Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 1, 0">-->
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 0, 0, 10">
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamIndex}" />
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="." />
+                                </StackPanel>
+                                
+                                <!--</Border>-->
+
+                                <!--<Border Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 1, 0">-->
+                                <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}" Margin="0, 0, 0, 10" >
+                                        <TextBlock.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Ažuriraj" Click="TeamUpdate_Click"/>
+                                            </ContextMenu>
+                                        </TextBlock.ContextMenu>
+                                </TextBlock>
+                                <!--</Border>-->
+
+                                <TextBlock Grid.Column="2" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TournamentScore}" Margin="0, 0, 0, 10"/>
+
+                                <TextBlock Grid.Column="3" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding ScoreDifference}" Margin="0, 0, 0, 10"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <!--<Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="50*" />
+                        <ColumnDefinition Width="10*" />
+                        <ColumnDefinition Width="40*" />
                         <ColumnDefinition Width="25*" />
                         <ColumnDefinition Width="25*" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 2, 0">
-                        <ItemsControl  ItemsSource="{Binding AllTeams}" HorizontalAlignment="Center">
+                    <Border Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 2, 0">
+                        <ItemsControl  ItemsSource="{Binding TeamScoreboardListing}" HorizontalAlignment="Center">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}" Margin="0, 5, 0, 5" >
@@ -60,7 +104,7 @@
                         </ItemsControl>
                     </Border>
 
-                    <Border Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 2, 0">
+                    <Border Grid.Column="2" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 2, 0">
                         <ItemsControl ItemsSource="{Binding AllTeams}" HorizontalAlignment="Center">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -70,7 +114,7 @@
                         </ItemsControl>
                     </Border>
 
-                    <Border Grid.Column="2" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 2, 0">
+                    <Border Grid.Column="3" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 2, 0">
                         <ItemsControl ItemsSource="{Binding AllTeams}" HorizontalAlignment="Center">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -81,15 +125,17 @@
                     </Border>
 
 
-                </Grid>
+                </Grid>-->
 
             </ScrollViewer>
         </Border>
         
         <!-- Row 2: Dodaj tim button -->
-        <Border Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="2" CornerRadius="40"
-             Margin="0, 10, 0, 10"
+        <Border Grid.Column="3" Grid.Row="2" CornerRadius="40"
+             Margin="0, 10, 20, 10"
              BorderThickness="2"
+             HorizontalAlignment="Right"
+             Width="300"
              Background="{StaticResource ButtonBackgroundColor}" 
              BorderBrush="{StaticResource PrimaryFontColor}"  
              MouseLeftButtonDown="AddTeam_Click">

@@ -21,7 +21,7 @@ namespace TournamentManager.Db
                     // Enable foreign keys just in case
                     new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                    string query = @"INSERT INTO Poslovnice (Name, Address, CountryId) VALUES (@name, @address, @countryId)";
+                    string query = @"INSERT INTO Offices (Name, Address, CountryId) VALUES (@name, @address, @countryId)";
 
                     using (var cmd = new SqliteCommand(query, connection))
                     {
@@ -53,7 +53,7 @@ namespace TournamentManager.Db
                 // Enable foreign keys just in case
                 new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                string query = $"UPDATE Poslovnice SET Name = @name, " +
+                string query = $"UPDATE Offices SET Name = @name, " +
                     $"Address = @address, " +
                     $"CountryId = @countryId WHERE Id = @id;";
 
@@ -83,7 +83,7 @@ namespace TournamentManager.Db
                 // Enable foreign keys just in case
                 new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                string query = "SELECT Id, Name FROM Drzave ORDER BY Name ASC";
+                string query = "SELECT Id, Name FROM Countries ORDER BY Name ASC";
 
                 using var cmd = new SqliteCommand(query, connection);
                 using var reader = cmd.ExecuteReader();
@@ -114,7 +114,7 @@ namespace TournamentManager.Db
                 // Enable foreign keys just in case
                 new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                string queryOffices = $"SELECT Id, Name, Address, CountryId FROM Poslovnice WHERE CountryId = {countryId}";
+                string queryOffices = $"SELECT Id, Name, Address, CountryId FROM Offices WHERE CountryId = {countryId}";
 
                 var cmd = new SqliteCommand(queryOffices, connection);
 
@@ -153,7 +153,7 @@ namespace TournamentManager.Db
                 // Enable foreign keys just in case
                 new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                string queryDelete = $"DELETE FROM Poslovnice WHERE Id = @officeId;";
+                string queryDelete = $"DELETE FROM Offices WHERE Id = @officeId;";
 
                 var cmd = new SqliteCommand(queryDelete, connection);
                 cmd.Parameters.AddWithValue("@officeId", officeId);
@@ -179,10 +179,10 @@ namespace TournamentManager.Db
                 // Enable foreign keys just in case
                 new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
 
-                string queryCountries = "SELECT d.Id AS CountryId, d.Name AS CountryName, p.Id AS OfficeId, p.Name AS OfficeName, p.Address AS OfficeAddress " +
-                    "FROM Drzave d INNER JOIN Poslovnice p " +
-                    "ON d.Id = p.CountryId " +
-                    "ORDER BY d.Name ASC, p.Name ASC";
+                string queryCountries = "SELECT c.Id AS CountryId, c.Name AS CountryName, o.Id AS OfficeId, o.Name AS OfficeName, o.Address AS OfficeAddress " +
+                    "FROM Countries c INNER JOIN Offices o " +
+                    "ON c.Id = o.CountryId " +
+                    "ORDER BY c.Name ASC, o.Name ASC";
 
                 var cmd = new SqliteCommand(queryCountries, connection);
                 var reader = cmd.ExecuteReader();
@@ -219,6 +219,46 @@ namespace TournamentManager.Db
 
                 return countries;
             }
+        }
+
+        public static List<Office> GetAllOffices()
+        {
+            var offices = new List<Office>();
+
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+
+                // Enable foreign keys just in case
+                new SqliteCommand("PRAGMA foreign_keys = ON;", connection).ExecuteNonQuery();
+
+                string queryOffices = $"SELECT * FROM Offices";
+
+                var cmd = new SqliteCommand(queryOffices, connection);
+
+                var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    offices.Add(new Office
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        Name = reader.GetString(reader.GetOrdinal("Name")),
+                        Address = reader.IsDBNull(reader.GetOrdinal("Address")) ? null : reader.GetString(reader.GetOrdinal("Address")),
+                        CountryId = reader.GetInt32(reader.GetOrdinal("CountryId")),
+                    });
+                }
+
+                cmd = new SqliteCommand(queryOffices, connection);
+                reader = cmd.ExecuteReader();
+
+                cmd.Dispose();
+                reader.Close();
+
+                connection.Close();
+            }
+
+            return offices;
         }
     }
 }

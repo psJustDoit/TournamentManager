@@ -1,11 +1,12 @@
 ﻿<Window x:Class="TournamentManager.AddTeamModal"
+        x:Name="AddTeamModalWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TournamentManager"
         mc:Ignorable="d"
-        Title="Dodaj tim" Height="300" Width="400"
+        Title="Dodaj tim" Height="350" Width="400"
         WindowStartupLocation="CenterOwner">
 
     <StackPanel  Background="{StaticResource PrimaryBackgroundColor}" Orientation="Vertical">
@@ -13,18 +14,22 @@
         <Label HorizontalAlignment="Center" Content="(obavezno)" Foreground="PaleVioletRed" FontSize="10"/>
         <TextBox Width="200"  x:Name="TeamNameTextbox"
                   Height="30"
-                  Margin="10"/>
+                  Margin="10, 5, 10, 25"/>
 
-        <Label HorizontalAlignment="Center" Content="Grad:" Foreground="{StaticResource PrimaryFontColor}"/>
-        <TextBox Width="200" x:Name="TeamCityTextbox"
-                      Height="30"
-                      Margin="10"/>
+        <Label HorizontalAlignment="Center" Content="Poslovnica:" Foreground="{StaticResource PrimaryFontColor}"/>
+        <Label HorizontalAlignment="Center" Content="(obavezno)" Foreground="PaleVioletRed" FontSize="10"/>
+        <ComboBox x:Name="OfficeComboBox" ItemsSource="{Binding Offices, ElementName=AddTeamModalWindow}"
+              Width="200"
+              Height="30"
+              DisplayMemberPath="Name"
+              SelectedItem="{Binding SelectedOffice}"
+              Margin="10, 5, 10, 25"/>
 
-        <Border BorderThickness="1" Width="100"
+        <Border BorderThickness="2" Width="100"
                  Background="{StaticResource ButtonBackgroundColor}"
                  CornerRadius="5"
                  BorderBrush="{StaticResource PrimaryFontColor}"
-                 Margin="0, 5, 0, 0">
+                 Margin="0, 15, 0, 0">
             <Button Content="Dodaj"
                  x:Name="AddTeamButton"
                  Click="AddTeam_Click"

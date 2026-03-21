@@ -26,29 +26,13 @@ namespace TournamentManager
     {
         public string? OfficeName { get; set; }
         public string? Address { get; set; }
-        public int? selectedCountryId;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public int? SelectedCountryId
+        private ObservableCollection<Country> _countries = new ObservableCollection<Country>();
+        public ObservableCollection<Country> Countries
         {
-            get => selectedCountryId.Value;
-            set
-            {
-                if (selectedCountryId != value)
-                {
-                    selectedCountryId = value;
-                    OnPropertyChanged(nameof(SelectedCountryId));
-                }
-            }
+            get => _countries;
+            set { _countries = value; OnPropertyChanged(nameof(Countries)); }
         }
-
-        protected void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        public ObservableCollection<Country> Countries { get; set; } = new ObservableCollection<Country>();
 
         public AddOfficeModal()
         {
@@ -79,14 +63,21 @@ namespace TournamentManager
                     return;
                 }
 
-                DbRepository.AddOffice(OfficeName, Address, selectedCountry.CountryId);
-                MessageBox.Show("Poslovnica dodana", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true; // closes modal and returns true
+                var result = DbRepository.AddOffice(OfficeName, Address, selectedCountry.CountryId);
+                if(result != 0)
+                {
+                    MessageBox.Show("Poslovnica dodana", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    DialogResult = true; // closes modal and returns true
+                }
             }
             catch
             {
                 MessageBox.Show("Greška pri dodavanju poslovnice", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
     }
 }

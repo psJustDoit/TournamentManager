@@ -19,12 +19,11 @@ namespace TournamentManager
         {
             base.OnStartup(e);
 
-
-            // Call your database setup here
-            SetupDatabase();
-
             // Alter database code
             //AlterDatabase();
+
+            // Database setup
+            SetupDatabase();
 
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -35,6 +34,7 @@ namespace TournamentManager
 
         private void ConfigureServices(ServiceCollection services)
         {
+            // Register ViewModels
             services.AddSingleton<TournamentViewModel>();
             services.AddSingleton<RoundHistoryViewModel>();
 
@@ -61,22 +61,30 @@ namespace TournamentManager
                 }
 
                 // Query to alter the db
-                string query = "ALTER TABLE Timovi ADD COLUMN DateCreated TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP;";
+                string changeOffices = "DROP TABLE Offices;";
+                string changeRounds = "DROP TABLE Rounds";
+                string changeTeams = "DROP TABLE Teams";
 
-                using (var cmd = new SqliteCommand(query, connection))
+                using (var cmd = new SqliteCommand(changeOffices, connection))
+                { cmd.ExecuteNonQuery(); }
+
+                using (var cmd = new SqliteCommand(changeRounds, connection))
+                { cmd.ExecuteNonQuery(); }
+
+                using (var cmd = new SqliteCommand(changeTeams, connection))
                 { cmd.ExecuteNonQuery(); }
             }
         }
 
         private void SeedCountries(SqliteConnection connection)
         {
-            string check = "SELECT COUNT(Id) FROM Drzave;";
+            string check = "SELECT COUNT(Id) FROM Countries;";
             long count = (long)new SqliteCommand(check, connection).ExecuteScalar();
 
             if (count == 0)
             {
                 string insert = @"
-                    INSERT INTO Drzave (Id, Name) VALUES
+                    INSERT INTO Countries (Id, Name) VALUES
                     ('1', 'Afghanistan'), ('2', 'Albania'), ('3', 'Algeria'), ('4', 'Andorra'), ('5', 'Angola'), ('6', 'Antigua and Barbuda'), ('7', 'Argentina'), 
                     ('8', 'Armenia'), ('9', 'Australia'),('10', 'Austria'), 
                     ('11', 'Azerbaijan'), ('12', 'Bahamas'), ('13', 'Bahrain'),('14', 'Bangladesh'), ('15', 'Barbados'), ('16', 'Belarus'), ('17', 'Belgium'), ('18', 'Belize'), ('19', 'Benin'), ('20', 'Bhutan'), 
@@ -119,52 +127,58 @@ namespace TournamentManager
                     cmd.ExecuteNonQuery();
                 }
 
-                string createPoslovniceTable = @"
-                    CREATE TABLE IF NOT EXISTS Poslovnice (
+                string createOfficesTable = @"
+                    CREATE TABLE IF NOT EXISTS Offices (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL,
                         Address TEXT,
                         CountryId INTEGER,
-                        FOREIGN KEY(CountryId) REFERENCES Drzave(Id)
+                        FOREIGN KEY(CountryId) REFERENCES Countries(Id)
                     );";
 
-                string createDrzaveTable = @"
-                    CREATE TABLE IF NOT EXISTS Drzave (
+                string createCountriesTable = @"
+                    CREATE TABLE IF NOT EXISTS Countries (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL
                     );";
 
-                string createTimoviTable = @"
-                    CREATE TABLE IF NOT EXISTS Timovi (
+                string createTeamsTable = @"
+                    CREATE TABLE IF NOT EXISTS Teams (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL,
-                        CountryId INTEGER,
                         DateCreated TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY(CountryId) REFERENCES Drzave(Id)
+                        OfficeId INTEGER NOT NULL,
+                        FOREIGN KEY(OfficeId) REFERENCES Offices(Id)
                     );";
 
-                string createRundeTable = @"
-                    CREATE TABLE IF NOT EXISTS Runde (
+                string createTournamentsHistoryTable = @"
+                    CREATE TABLE IF NOT EXISTS TournamentsHistory (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        TimId INTEGER,
-                        FOREIGN KEY(TimId) REFERENCES Timovi(Id)
+                        GameName INTEGER,
+                        StartDate TEXT NOT NULL,
+                        EndDate TEXT NOT NULL
                     );";
 
                 string createLogsTable = @"
                     CREATE TABLE IF NOT EXISTS Logs (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        LogMessage TEXT NOT NULL);";
+                        DateTimeOccurred TEXT,
+                        ClassOccurred TEXT
+                        GameName TEXT,
+                        TournamentId INTEGER,
+                        LogMessage TEXT NOT NULL
+                    );";
 
-                using (var cmd = new SqliteCommand(createPoslovniceTable, connection))
+                using (var cmd = new SqliteCommand(createOfficesTable, connection))
                 { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createDrzaveTable, connection))
+                using (var cmd = new SqliteCommand(createCountriesTable, connection))
                 { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createTimoviTable, connection))
+                using (var cmd = new SqliteCommand(createTeamsTable, connection))
                 { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createRundeTable, connection))
+                using (var cmd = new SqliteCommand(createTournamentsHistoryTable, connection))
                 { cmd.ExecuteNonQuery(); }
 
                 using (var cmd = new SqliteCommand(createLogsTable, connection))

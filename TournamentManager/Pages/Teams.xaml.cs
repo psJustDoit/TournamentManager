@@ -1,7 +1,8 @@
-﻿using System.Windows;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 using System.Windows.Controls;
-using TournamentManager.ViewModels;
 using TournamentManager.Models;
+using TournamentManager.ViewModels;
 
 namespace TournamentManager
 {
@@ -23,7 +24,6 @@ namespace TournamentManager
 
         private void AddTeam_Click(object sender, RoutedEventArgs e) 
         {
-            // Create modal window to add office
             var modal = new AddTeamModal(_tournamentViewModel);
 
             modal.Owner = Window.GetWindow(this);
@@ -43,7 +43,7 @@ namespace TournamentManager
                 return;
             }
 
-            var modal = new UpdateTeamModal(teamToUpdate);
+            var modal = new EditTeamModal(teamToUpdate, _tournamentViewModel);
             modal.Owner = Window.GetWindow(this);
 
             bool? result = modal.ShowDialog();

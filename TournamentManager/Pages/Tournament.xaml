@@ -197,7 +197,7 @@
                 <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20"><Underline>Diff</Underline></TextBlock>
 
                 <ScrollViewer VerticalScrollBarVisibility="Hidden" Grid.Row="1" Grid.ColumnSpan="3">
-                    <ItemsControl ItemsSource="{Binding AllTeams}" >
+                    <ItemsControl ItemsSource="{Binding TeamScoreboardListing}" >
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0, 5, 0 ,0">
@@ -206,7 +206,7 @@
                                         <ColumnDefinition Width="70*" />
                                         <ColumnDefinition Width="15*" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamTournamentScore}"/>
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TournamentScore}"/>
                                     <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}"/>
                                     <TextBlock Grid.Column="2" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding ScoreDifference}"/>
                                 </Grid>

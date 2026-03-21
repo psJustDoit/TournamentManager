@@ -53,11 +53,11 @@ namespace TournamentManager.Models
             set { _scoreDifference = value; OnPropertyChanged(nameof(ScoreDifference)); }
         }
 
-        private string? _city;
-        public string? City 
+        private Office? _office;
+        public Office? Office 
         { 
-            get => _city; 
-            set { _city = value; OnPropertyChanged(nameof(City)); } 
+            get => _office; 
+            set { _office = value; OnPropertyChanged(nameof(Office)); } 
         }
 
         private Team? _opponent;
@@ -88,6 +88,13 @@ namespace TournamentManager.Models
             set { _isDraw = value; }
         }
 
+        private bool? _isKicked;
+        public bool? IsKicked
+        {
+            get => _isKicked;
+            set { _isKicked = value; }
+        }
+
         private bool _isDummyTeam;
         public bool IsDummyTeam
         {
@@ -114,11 +121,11 @@ namespace TournamentManager.Models
         public List<int> TeamsIdsAlreadyPlayedWith{ get; set; } = new List<int>();
         public List<int> TeamIdsWonAgainst { get; set; } = new List<int>();
 
-        public Team(int teamId, string name, bool isDummyTeam, string? city = null)
+        public Team(int teamId, string name, bool isDummyTeam, Office? office = null)
         {
             TeamId = teamId;
             Name = name;
-            City = city;
+            Office = office;
             Wins = 0;
             Losses = 0;
             Draws = 0;

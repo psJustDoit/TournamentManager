@@ -117,6 +117,13 @@ namespace TournamentManager.ViewModels
             set { _teamPairings = value; OnPropertyChanged(nameof(TeamPairings)); }
         }
 
+        private ObservableCollection<TeamScoreboardListing> _teamScoreboardListing = new ObservableCollection<TeamScoreboardListing>();
+        public ObservableCollection<TeamScoreboardListing> TeamScoreboardListing
+        {
+            get => _teamScoreboardListing;
+            set { _teamScoreboardListing = value; OnPropertyChanged(nameof(TeamScoreboardListing)); }
+        }
+
         public TournamentViewModel(RoundHistoryViewModel roundHistoryViewModel)
         {
             TournamentType.Add(new TournamentType(1, "CS 5v5"));
@@ -140,7 +147,7 @@ namespace TournamentManager.ViewModels
                 if (team.Opponent == null)
                 {
                     // Pair with dummy team if there are no available teams
-                    if (!AllTeams.Where(x => x.TeamId != team.TeamId && x.Opponent == null).Any())
+                    if (!AllTeams.Where(t => t.TeamId != team.TeamId && t.Opponent == null && t.Office.Id != team.Office.Id).Any())
                     {
                         var dummyTeam = CreateDummyTeam();
                         team.Opponent = dummyTeam;
@@ -150,7 +157,7 @@ namespace TournamentManager.ViewModels
                     else
                     {
                         Random random = new Random();
-                        var listOfPossibleOpponents = teamsNotYetPaired.Where(x => x.TeamId != team.TeamId).ToList();
+                        var listOfPossibleOpponents = teamsNotYetPaired.Where(t => t.TeamId != team.TeamId && t.Office.Id != team.Office.Id).ToList();
                         var randomTeamPickIndex = random.Next(0, listOfPossibleOpponents.Count);
                         var teamToPair = listOfPossibleOpponents[randomTeamPickIndex];
                         team.Opponent = teamToPair;
@@ -183,6 +190,7 @@ namespace TournamentManager.ViewModels
 
                 Team? opponent = null;
                 var possibleOpponents = AllTeams.Where(t => t.TeamId != team.TeamId)
+                    .Where(t => t.IsKicked != true)
                     .Where(t => t.Opponent == null)
                     .Where(t => !team.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId));
 
@@ -255,8 +263,15 @@ namespace TournamentManager.ViewModels
 
         public void SortTeamsByScoreDescending()
         {
-            var sortedList = new ObservableCollection<Team>(AllTeams.OrderByDescending(t => t.TeamTournamentScore));
-            AllTeams = sortedList;
+            var newTeamOrdering = AllTeams.OrderByDescending(x => x.TeamTournamentScore).ToList();
+            TeamScoreboardListing.Clear();
+
+            for (int i = 0; i < newTeamOrdering.Count(); i++) 
+            {
+                var team = newTeamOrdering[i];
+                TeamScoreboardListing.Add(new TeamScoreboardListing(i + 1, team.Name, team.TeamTournamentScore, team.ScoreDifference));
+            }
+                
         }
 
         public Team CreateDummyTeam()
@@ -268,7 +283,14 @@ namespace TournamentManager.ViewModels
             return dummyTeam;
         }
 
-        
+        // Use this method to add teams instead of adding to collection directly
+        public void AddTeam(Team teamToAdd)
+        {
+            AllTeams.Add(teamToAdd);
+            var teamScoreboardListing = new TeamScoreboardListing(TeamScoreboardListing.Count + 1, teamToAdd.Name, teamToAdd.TeamTournamentScore, teamToAdd.ScoreDifference);
+            TeamScoreboardListing.Add(teamScoreboardListing);
+        }
+
 
 
         public event PropertyChangedEventHandler? PropertyChanged;
