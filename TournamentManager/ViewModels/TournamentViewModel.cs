@@ -183,7 +183,7 @@ namespace TournamentManager.ViewModels
         {
             foreach (var team in AllTeams)
             {
-                if(team.Opponent != null)
+                if(team.Opponent != null || team.IsKicked == true)
                 {
                     continue;
                 }
