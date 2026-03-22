@@ -261,9 +261,10 @@ namespace TournamentManager.ViewModels
             }
         }
 
-        public void SortTeamsByScoreDescending()
+        public void SortTeamsForScoreboard()
         {
-            var newTeamOrdering = AllTeams.OrderByDescending(x => x.TeamTournamentScore).ToList();
+            // Sort teams by Score descending, then teams who have same Score will be sorted by ScoreDifference
+            var newTeamOrdering = AllTeams.OrderByDescending(x => x.TeamTournamentScore).ThenByDescending(x => x.ScoreDifference).ToList();
             TeamScoreboardListing.Clear();
 
             for (int i = 0; i < newTeamOrdering.Count(); i++) 

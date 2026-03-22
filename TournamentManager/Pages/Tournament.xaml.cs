@@ -113,7 +113,7 @@ namespace TournamentManager
             _tournamentViewModel.MatchmakeTeamsNext();
             _tournamentViewModel.IncrementRound();
 
-            _tournamentViewModel.SortTeamsByScoreDescending();
+            _tournamentViewModel.SortTeamsForScoreboard();
             UpdateVisibility();
         }
 
@@ -166,7 +166,7 @@ namespace TournamentManager
                 teamPairingsHistoryInfo.Add(pairing);
             }
 
-            _tournamentViewModel.SortTeamsByScoreDescending();
+            _tournamentViewModel.SortTeamsForScoreboard();
             var currentScoreboard = _tournamentViewModel.TeamScoreboardListing.ToList();
 
             roundHistoryInfo.Round = _tournamentViewModel.RoundCount;
@@ -375,7 +375,7 @@ namespace TournamentManager
                 teamToKick.IsKicked = true;
 
                 //_tournamentViewModel.AllTeams.Remove(teamToKick);
-                _tournamentViewModel.SortTeamsByScoreDescending();
+                _tournamentViewModel.SortTeamsForScoreboard();
             }
             else
             {
