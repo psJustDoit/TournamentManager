@@ -64,11 +64,12 @@ namespace TournamentManager
                 }
 
                 var result = DbRepository.AddOffice(OfficeName, Address, selectedCountry.CountryId);
-                if(result != 0)
-                {
-                    MessageBox.Show("Poslovnica dodana", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    DialogResult = true; // closes modal and returns true
-                }
+
+                //if(result != 0)
+                //{
+                //    MessageBox.Show("Poslovnica dodana", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                //    DialogResult = true; // closes modal and returns true
+                //}
             }
             catch
             {

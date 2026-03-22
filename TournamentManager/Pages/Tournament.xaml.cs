@@ -362,15 +362,15 @@ namespace TournamentManager
             var result = MessageBox.Show($"Izbaciti tim {teamToKick.Name}?", "Izbaci", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                // Add 1 point to every team who lost against the team being kicked
-                foreach (var teamId in teamToKick.TeamIdsWonAgainst)
-                {
-                    var teamToAddPointTo = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamId).FirstOrDefault();
-                    if (teamToAddPointTo != null)
-                    {
-                        teamToAddPointTo.IncreaseTeamTournamentScoreBy1();
-                    }
-                }
+                //// Add 1 point to every team who lost against the team being kicked
+                //foreach (var teamId in teamToKick.TeamIdsWonAgainst)
+                //{
+                //    var teamToAddPointTo = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamId).FirstOrDefault();
+                //    if (teamToAddPointTo != null)
+                //    {
+                //        teamToAddPointTo.IncreaseTeamTournamentScoreBy1();
+                //    }
+                //}
 
                 teamToKick.IsKicked = true;
 
