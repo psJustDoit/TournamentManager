@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Media.TextFormatting;
 using TournamentManager.HelperClasses;
 using TournamentManager.Models;
 
@@ -96,13 +97,21 @@ namespace TournamentManager.ViewModels
             set { _roundEndDateTime = value; OnPropertyChanged(nameof(RoundEndDateTime)); }
         }
 
+        private bool _isTournamentStarted;
+        public bool IsTournamentStarted
+        {
+            get => _isTournamentStarted;
+            set => _isTournamentStarted = value;
+        }
+
         private TournamentType _selectedTournamentType;
         public TournamentType SelectedTournamentType
         {
             get { return _selectedTournamentType; }
-            set { _selectedTournamentType = value;  }
+            set { _selectedTournamentType = value; }
         }
 
+        // Observable properties
         private ObservableCollection<Team> _allTeams = new ObservableCollection<Team>();
         public ObservableCollection<Team> AllTeams
         {
@@ -139,6 +148,51 @@ namespace TournamentManager.ViewModels
             _roundHistoryViewModel = roundHistoryViewModel;
         }
 
+        private Team FindOpponentForNewlyAddedTeam(Team newTeam)
+        {
+
+            var possibleOpponents = AllTeams.Where(t => t.TeamId != newTeam.TeamId).ToList();
+
+            if(RoundCount == 1)
+            {
+                possibleOpponents = possibleOpponents.Where(t => t.Office?.Id != newTeam.Office?.Id).ToList();
+            }
+
+            // Find if there is a team that isnt new that is paired with a dummy team
+            var opponentToFind = possibleOpponents.Where(t => t.IsNewTeam == false && t.Opponent != null && t.Opponent.IsDummyTeam == true).FirstOrDefault();
+            if (opponentToFind != null) return opponentToFind;
+
+            // Find if there is a newly added team paired with dummy team
+            opponentToFind = possibleOpponents.Where(t => t.IsNewTeam == true && t.Opponent != null && t.Opponent.IsDummyTeam == true).FirstOrDefault();
+            if (opponentToFind != null) return opponentToFind;
+
+            // Find if there is an available dummy team
+            opponentToFind = DummyTeams.Where(dt => dt.Opponent == null).FirstOrDefault();
+            if (opponentToFind != null) return opponentToFind;
+
+            // Create dummy team, since no other available teams or dummy teams were found
+            opponentToFind = CreateDummyTeam();
+            return opponentToFind;
+        }
+
+
+        private TeamPairing? FindTeamPairingByTeamId(int teamId)
+        {
+            var teamPairToFind = TeamPairings.Where(tp => tp.Team1.TeamId == teamId || tp.Team2.TeamId == teamId).FirstOrDefault();
+            return teamPairToFind;
+        }
+
+        public void IncrementRound()
+        {
+            RoundCount += 1;
+        }
+
+        public void IncrementNextTeamCount()
+        {
+            NextTeamId += 1;
+        }
+
+        // Matchmaking methods
         public void MatchmakeTeamsFirstRound()
         {
             var teamsNotYetPaired = AllTeams.ToList();
@@ -149,9 +203,21 @@ namespace TournamentManager.ViewModels
                     // Pair with dummy team if there are no available teams
                     if (!AllTeams.Where(t => t.TeamId != team.TeamId && t.Opponent == null && t.Office.Id != team.Office.Id).Any())
                     {
-                        var dummyTeam = CreateDummyTeam();
-                        team.Opponent = dummyTeam;
-                        dummyTeam.Opponent = team;
+                        // Check in case a tournament was restarted and some dummy teams were created before
+                        var dummyTeam = DummyTeams.Where(dt => dt.Opponent == null).FirstOrDefault();
+                        if (dummyTeam == null)
+                        {
+                            dummyTeam = CreateDummyTeam();
+                            team.Opponent = dummyTeam;
+                            dummyTeam.Opponent = team;
+                            
+                        }
+                        else
+                        {
+                            team.Opponent = dummyTeam;
+                            dummyTeam.Opponent = team;
+                        }
+
                         TeamPairings.Add(new TeamPairing(team, dummyTeam));
                     }
                     else
@@ -168,22 +234,38 @@ namespace TournamentManager.ViewModels
                 }
             }
         }
+        
 
-        public void IncrementRound()
+        public void MatchmakeNewlyAddedTeam(Team newTeam)
         {
-            RoundCount += 1;
+            var opponent = FindOpponentForNewlyAddedTeam(newTeam);
+            var pairingOfOpponent = FindTeamPairingByTeamId(opponent.TeamId);
+
+            if (pairingOfOpponent == null) 
+            {
+                newTeam.Opponent = opponent;
+                opponent.Opponent = newTeam;
+                TeamPairings.Add(new TeamPairing(newTeam, opponent));
+            }
+            else
+            {
+                pairingOfOpponent.Team1.Opponent = null;
+                pairingOfOpponent.Team2.Opponent = null;
+
+                pairingOfOpponent.Team1 = newTeam;
+                pairingOfOpponent.Team2 = opponent;
+
+                newTeam.Opponent = opponent;
+                opponent.Opponent = newTeam;
+            }
         }
 
-        public void IncrementNextTeamCount()
-        {
-            NextTeamId += 1;
-        }
 
-        public void  MatchmakeTeamsNext()
+        public void MatchmakeTeamsNext()
         {
             foreach (var team in AllTeams)
             {
-                if(team.Opponent != null || team.IsKicked == true)
+                if (team.Opponent != null || team.IsKicked == true)
                 {
                     continue;
                 }
@@ -223,14 +305,14 @@ namespace TournamentManager.ViewModels
 
                 if (opponent == null)
                 {
-                    if(!DummyTeams.Any() || !DummyTeams.Where(dt => dt.Opponent == null).Any())
+                    if (!DummyTeams.Any() || !DummyTeams.Where(dt => dt.Opponent == null).Any())
                     {
                         opponent = CreateDummyTeam();
                     }
                     else
                     {
                         opponent = DummyTeams.Where(dt => dt.Opponent == null).FirstOrDefault();
-                    }  
+                    }
                 }
 
                 team.Opponent = opponent;
@@ -240,7 +322,7 @@ namespace TournamentManager.ViewModels
                 team.IsLoser = null;
                 team.IsDraw = null;
                 team.ResetGameMatchScore();
-                
+
 
                 opponent.IsWinner = null;
                 opponent.IsLoser = null;
@@ -260,6 +342,7 @@ namespace TournamentManager.ViewModels
                 TeamPairings.Add(new TeamPairing(team, opponent));
             }
         }
+        // End matchmaking methods
 
         public void SortTeamsForScoreboard()
         {
@@ -267,12 +350,12 @@ namespace TournamentManager.ViewModels
             var newTeamOrdering = AllTeams.OrderByDescending(x => x.TeamTournamentScore).ThenByDescending(x => x.ScoreDifference).ToList();
             TeamScoreboardListing.Clear();
 
-            for (int i = 0; i < newTeamOrdering.Count(); i++) 
+            for (int i = 0; i < newTeamOrdering.Count(); i++)
             {
                 var team = newTeamOrdering[i];
                 TeamScoreboardListing.Add(new TeamScoreboardListing(i + 1, team.Name, team.TeamTournamentScore, team.ScoreDifference));
             }
-                
+
         }
 
         public Team CreateDummyTeam()

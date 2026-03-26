@@ -47,6 +47,7 @@ namespace TournamentManager
             _tournamentViewModel.MatchmakeTeamsFirstRound();
             _tournamentViewModel.IncrementRound();
             _tournamentViewModel.RoundStartDateTime = DateTime.Now;
+            _tournamentViewModel.IsTournamentStarted = true;
 
             UpdateVisibility();
         }
@@ -106,7 +107,7 @@ namespace TournamentManager
                 dummy.Opponent = null;
             }
 
-            CreateRoundHistoryEntry();
+            _roundHistoryViewModel.CreateRoundHistoryEntry(_tournamentViewModel);
 
             _tournamentViewModel.TeamPairings.Clear();
 
@@ -117,67 +118,6 @@ namespace TournamentManager
             UpdateVisibility();
         }
 
-        private void CreateRoundHistoryEntry()
-        {
-            var roundHistoryInfo = new RoundHistoryInfo();
-            var teamPairingsHistoryInfo = new List<TeamPairing>();
-            foreach (var teamPairing in _tournamentViewModel.TeamPairings)
-            {
-                Team? team1 = null;
-                if (teamPairing.Team1 != null)
-                {
-                    team1 = new Team(teamPairing.Team1.TeamId, teamPairing.Team1.Name, teamPairing.Team1.IsDummyTeam, null);
-                    team1.IsDraw = teamPairing.Team1.IsDraw;
-                    team1.IsLoser = teamPairing.Team1.IsLoser;
-                    team1.IsWinner = teamPairing.Team1.IsWinner;
-                    team1.TeamTournamentScore = teamPairing.Team1.TeamTournamentScore;
-                    team1.GameMatchScore = teamPairing.Team1.GameMatchScore;
-                    team1.ScoreDifference = teamPairing.Team1.ScoreDifference;
-                    team1.Wins = teamPairing.Team1.Wins;
-                    team1.Losses = teamPairing.Team1.Losses;
-                    team1.Draws = teamPairing.Team1.Draws;
-                    team1.TeamsIdsAlreadyPlayedWith = teamPairing.Team1.TeamsIdsAlreadyPlayedWith;
-                    team1.TeamIdsWonAgainst = teamPairing.Team1.TeamIdsWonAgainst;
-                }
-
-                Team? team2 = null;
-                if (teamPairing.Team2 != null)
-                {
-                    team2 = new Team(teamPairing.Team2.TeamId, teamPairing.Team2.Name, teamPairing.Team2.IsDummyTeam, null);
-                    team2.IsDraw = teamPairing.Team2.IsDraw;
-                    team2.IsLoser = teamPairing.Team2.IsLoser;
-                    team2.IsWinner = teamPairing.Team2.IsWinner;
-                    team2.TeamTournamentScore = teamPairing.Team2.TeamTournamentScore;
-                    team2.GameMatchScore = teamPairing.Team2.GameMatchScore;
-                    team2.ScoreDifference = teamPairing.Team2.ScoreDifference;
-                    team2.Wins = teamPairing.Team2.Wins;
-                    team2.Losses = teamPairing.Team2.Losses;
-                    team2.Draws = teamPairing.Team2.Draws;
-                    team2.TeamsIdsAlreadyPlayedWith = teamPairing.Team2.TeamsIdsAlreadyPlayedWith;
-                    team2.TeamIdsWonAgainst = teamPairing.Team2.TeamIdsWonAgainst;
-
-                }
-
-                team1?.Opponent = team2;
-                team2?.Opponent = team1;
-
-                var pairing = new TeamPairing(team1, team2);
-
-                teamPairingsHistoryInfo.Add(pairing);
-            }
-
-            _tournamentViewModel.SortTeamsForScoreboard();
-            var currentScoreboard = _tournamentViewModel.TeamScoreboardListing.ToList();
-
-            roundHistoryInfo.Round = _tournamentViewModel.RoundCount;
-            roundHistoryInfo.Scoreboard = currentScoreboard;
-            roundHistoryInfo.TeamPairing = teamPairingsHistoryInfo;
-            roundHistoryInfo.DateTimeEnded = DateTime.Now;
-
-            // Add round info to round histories
-            _roundHistoryViewModel.Rounds.Add(_tournamentViewModel.RoundCount);
-            _roundHistoryViewModel.AllRounds.Add(roundHistoryInfo);
-        }
 
         private void TeamMatchOutcome_Click(object sender, RoutedEventArgs e)
         {
@@ -310,77 +250,94 @@ namespace TournamentManager
 
         private void TeamSwap_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            var rootBorder = FindParent<Border>(button);
-            var teamPairing = rootBorder.DataContext as TeamPairing;
-            var teamPositionToSwap = (TeamEnum)button.Tag;
-            Team? teamToSwap = null;
-
-            switch (teamPositionToSwap)
+            try
             {
-                case TeamEnum.Team1:
-                    teamToSwap = teamPairing.Team1;
-                    break;
-                case TeamEnum.Team2:
-                    teamToSwap = teamPairing.Team2;
-                    break;
+                var button = sender as Button;
+                var rootBorder = FindParent<Border>(button);
+                var teamPairing = rootBorder.DataContext as TeamPairing;
+                var teamPositionToSwap = (TeamEnum)button.Tag;
+                Team? teamToSwap = null;
+
+                switch (teamPositionToSwap)
+                {
+                    case TeamEnum.Team1:
+                        teamToSwap = teamPairing.Team1;
+                        break;
+                    case TeamEnum.Team2:
+                        teamToSwap = teamPairing.Team2;
+                        break;
+                }
+
+                var modal = new SwapTeamModal(teamPairing, _tournamentViewModel, teamToSwap, teamPositionToSwap);
+                modal.Owner = Window.GetWindow(this);
+
+                bool? result = modal.ShowDialog();
             }
-
-            var modal = new SwapTeamModal(teamPairing, _tournamentViewModel, teamToSwap, teamPositionToSwap);
-            modal.Owner = Window.GetWindow(this);
-
-            bool? result = modal.ShowDialog();
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+                //TODO: Add logging
+            }
         }
 
         //TODO: Rework with having additional lists
         private void TeamKick_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-            var rootBorder = FindParent<Border>(button);
-            var teamPairing = rootBorder.DataContext as TeamPairing;
-            var teamToKickPosition = (TeamEnum)button.Tag;
-
-            Team? teamToKick = null;
-
-            switch (teamToKickPosition)
+            try
             {
-                case TeamEnum.Team1:
-                    teamToKick = teamPairing?.Team1;
-                    teamPairing.Team1 = null;
-                    break;
-                case TeamEnum.Team2:
-                    teamToKick = teamPairing?.Team2;
-                    teamPairing.Team2 = null;
-                    break;
+                var button = sender as Button;
+                var rootBorder = FindParent<Border>(button);
+                var teamPairing = rootBorder.DataContext as TeamPairing;
+                var teamToKickPosition = (TeamEnum)button.Tag;
+
+                Team? teamToKick = null;
+
+                switch (teamToKickPosition)
+                {
+                    case TeamEnum.Team1:
+                        teamToKick = teamPairing?.Team1;
+                        teamPairing.Team1 = null;
+                        break;
+                    case TeamEnum.Team2:
+                        teamToKick = teamPairing?.Team2;
+                        teamPairing.Team2 = null;
+                        break;
+                }
+
+                if (teamToKick == null || teamToKick.IsDummyTeam == true)
+                {
+                    return;
+                }
+
+                var result = MessageBox.Show($"Izbaciti tim {teamToKick.Name}?", "Izbaci", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    //// Add 1 point to every team who lost against the team being kicked
+                    //foreach (var teamId in teamToKick.TeamIdsWonAgainst)
+                    //{
+                    //    var teamToAddPointTo = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamId).FirstOrDefault();
+                    //    if (teamToAddPointTo != null)
+                    //    {
+                    //        teamToAddPointTo.IncreaseTeamTournamentScoreBy1();
+                    //    }
+                    //}
+
+                    teamToKick.IsKicked = true;
+
+                    //_tournamentViewModel.AllTeams.Remove(teamToKick);
+                    _tournamentViewModel.SortTeamsForScoreboard();
+                }
+                else
+                {
+                    return;
+                }
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+                //TODO: Add logging
             }
 
-            if (teamToKick == null || teamToKick.IsDummyTeam == true)
-            {
-                return;
-            }
-
-            var result = MessageBox.Show($"Izbaciti tim {teamToKick.Name}?", "Izbaci", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
-            {
-                //// Add 1 point to every team who lost against the team being kicked
-                //foreach (var teamId in teamToKick.TeamIdsWonAgainst)
-                //{
-                //    var teamToAddPointTo = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamId).FirstOrDefault();
-                //    if (teamToAddPointTo != null)
-                //    {
-                //        teamToAddPointTo.IncreaseTeamTournamentScoreBy1();
-                //    }
-                //}
-
-                teamToKick.IsKicked = true;
-
-                //_tournamentViewModel.AllTeams.Remove(teamToKick);
-                _tournamentViewModel.SortTeamsForScoreboard();
-            }
-            else
-            {
-                return;
-            }
         }
 
         private void TournamentType_SelectionChanged(object sender, SelectionChangedEventArgs e)

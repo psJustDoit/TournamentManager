@@ -50,7 +50,7 @@ namespace TournamentManager
 
             if (result == true)
             {
-                _tournamentViewModel.SortTeamsByScoreDescending();
+                _tournamentViewModel.SortTeamsForScoreboard();
             }
         }
 

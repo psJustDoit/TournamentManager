@@ -48,17 +48,19 @@ namespace TournamentManager
 
             var teamToAdd = new Team(_tournamentViewModel.NextTeamId, teamName, false, selectedOffice);
 
-
-            if (_tournamentViewModel.RoundCount >= 1)
-            {
-                teamToAdd.IsNewTeam = true;
-            }
-
             _tournamentViewModel.AddTeam(teamToAdd);
-            _tournamentViewModel.SortTeamsByScoreDescending();
+            _tournamentViewModel.SortTeamsForScoreboard();
 
             TeamNameTextbox.Text = String.Empty;
             OfficeComboBox.SelectedItem = null;
+
+            if (_tournamentViewModel.IsTournamentStarted == true)
+            {
+                teamToAdd.IsNewTeam = true;
+                _tournamentViewModel.MatchmakeNewlyAddedTeam(teamToAdd);
+            }
+
+            
         }
     }
 }
