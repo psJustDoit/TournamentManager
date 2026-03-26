@@ -1,12 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Media.TextFormatting;
+using TournamentManager.Enums;
 using TournamentManager.HelperClasses;
 using TournamentManager.Models;
 
 namespace TournamentManager.ViewModels
 {
     //TODO: add manually entering rounds from 5 - 15
+    public enum TournamentState { NotStarted = 1, Started = 2, Finished = 3 }
     public class TournamentViewModel : INotifyPropertyChanged
     {
         private readonly RoundHistoryViewModel _roundHistoryViewModel;
@@ -76,12 +78,19 @@ namespace TournamentManager.ViewModels
             }
         }
 
-        private bool _isRoundFinished;
-        public bool IsRoundFinished
+        private int _maxNumberOfRounds;
+        public int MaxNumberOfRounds
         {
-            get => _isRoundFinished;
-            set => _isRoundFinished = value;
+            get { return _maxNumberOfRounds; }
+            set { _maxNumberOfRounds = value; }
         }
+
+        //private bool _isRoundFinished;
+        //public bool IsRoundFinished
+        //{
+        //    get => _isRoundFinished;
+        //    set => _isRoundFinished = value;
+        //}
 
         private DateTime? _roundStartDateTime { get; set; }
         public DateTime? RoundStartDateTime
@@ -97,15 +106,22 @@ namespace TournamentManager.ViewModels
             set { _roundEndDateTime = value; OnPropertyChanged(nameof(RoundEndDateTime)); }
         }
 
-        private bool _isTournamentStarted;
-        public bool IsTournamentStarted
+        //private bool _isTournamentStarted;
+        //public bool IsTournamentStarted
+        //{
+        //    get => _isTournamentStarted;
+        //    set => _isTournamentStarted = value;
+        //}
+
+        private TournamentState _tournamentState;
+        public TournamentState TournamentState
         {
-            get => _isTournamentStarted;
-            set => _isTournamentStarted = value;
+            get => _tournamentState;
+            set => _tournamentState = value;
         }
 
-        private TournamentType _selectedTournamentType;
-        public TournamentType SelectedTournamentType
+        private TournamentType? _selectedTournamentType;
+        public TournamentType? SelectedTournamentType
         {
             get { return _selectedTournamentType; }
             set { _selectedTournamentType = value; }
@@ -144,6 +160,8 @@ namespace TournamentManager.ViewModels
             TournamentType.Add(new TournamentType(7, "LoL ARAM"));
             TournamentType.Add(new TournamentType(8, "Fortnite"));
             TournamentType.Add(new TournamentType(9, "PUBG Battle Royal"));
+
+            TournamentState = TournamentState.NotStarted;
 
             _roundHistoryViewModel = roundHistoryViewModel;
         }
@@ -191,6 +209,51 @@ namespace TournamentManager.ViewModels
         {
             NextTeamId += 1;
         }
+
+        public void HandleAllTeamsWinsLossesDrawsAndScore()
+        {
+            //TODO: Maybe rework to have 2 lists, teams eligible to play and kicked teams then iterate and split if team is kicked
+            foreach (var team in AllTeams)
+            {
+
+                if (team.IsLoser == true)
+                {
+                    //team.IncreaseTeamLoss();
+                    team.IncreaseTeamLossBy1();
+                }
+
+                if (team.IsWinner == true)
+                {
+                    //team.IncreaseTeamWin();
+                    team.IncreaseTeamWinBy1();
+                }
+
+                if (team.IsDraw == true)
+                {
+                    //team.IncreaseTeamDraw();
+                    team.IncreaseTeamDrawBy1();
+                }
+
+                if (team.Opponent != null)
+                {
+                    if (team.Opponent.IsDummyTeam == false)
+                    {
+                        team.TeamsIdsAlreadyPlayedWith.Add(team.Opponent.TeamId);
+                    }
+
+                    team.SetScoreDifference(team.Opponent);
+                    team.TeamIdsWonAgainst.Add(team.Opponent.TeamId);
+                }
+
+                team.Opponent = null;
+            }
+
+            foreach (var dummy in DummyTeams)
+            {
+                dummy.Opponent = null;
+            }
+        }
+
 
         // Matchmaking methods
         public void MatchmakeTeamsFirstRound()
@@ -259,7 +322,6 @@ namespace TournamentManager.ViewModels
                 opponent.Opponent = newTeam;
             }
         }
-
 
         public void MatchmakeTeamsNext()
         {
@@ -344,6 +406,42 @@ namespace TournamentManager.ViewModels
         }
         // End matchmaking methods
 
+        public void RestartFirstRound()
+        {
+            foreach(var team in AllTeams) 
+            {
+                team.ResetAllTeamValues();
+                team.ResetAllTeamStatuses();
+            }
+
+            foreach (var dummy in DummyTeams) 
+            {
+                dummy.ResetAllTeamValues();
+                dummy.ResetAllTeamStatuses();
+            }
+
+            RoundCount = 0;
+            RoundStartDateTime = null;
+            TeamPairings.Clear();
+            TeamScoreboardListing.Clear();
+            TournamentState = TournamentState.NotStarted;
+        }
+
+        public bool HasAnyUnresolvedPairs()
+        {
+            var unresolvedPairOutcomes = TeamPairings.Where(tp => tp.Team1 != null && tp.Team2 != null)
+               .Where(tp => tp.Team1.IsWinner == null && tp.Team1.IsLoser == null && tp.Team1.IsDraw == null)
+               .Where(tp => tp.Team2.IsWinner == null && tp.Team2.IsLoser == null && tp.Team2.IsDraw == null)
+               .ToList();
+
+            if (unresolvedPairOutcomes.Any()) 
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public void SortTeamsForScoreboard()
         {
             // Sort teams by Score descending, then teams who have same Score will be sorted by ScoreDifference
@@ -362,7 +460,7 @@ namespace TournamentManager.ViewModels
         {
             dummyTeamCount += 1;
             NextTeamId += 1;
-            var dummyTeam = new Team(NextTeamId, $"Dummy Team {dummyTeamCount}", true);
+            var dummyTeam = new Team(teamId: NextTeamId, name: $"Dummy Team {dummyTeamCount}", isDummyTeam: true, isNewTeam: false);
             DummyTeams.Add(dummyTeam);
             return dummyTeam;
         }

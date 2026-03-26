@@ -32,26 +32,81 @@ namespace TournamentManager
 
         private void StartTournament_Click(object sender, RoutedEventArgs e)
         {
-            if (!_tournamentViewModel.AllTeams.Any())
+            try
             {
-                MessageBox.Show("Nema dodanih timova.", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
+                if (!_tournamentViewModel.AllTeams.Any())
+                {
+                    MessageBox.Show("Nema dodanih timova.", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
 
-            if (_tournamentViewModel.SelectedTournamentType == null)
+                if (_tournamentViewModel.SelectedTournamentType == null)
+                {
+                    MessageBox.Show("Nije selektirana igra za turnir", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                if(String.IsNullOrEmpty(NumberOfRoundsTextbox.Text))
+                {
+                    MessageBox.Show("Nije unesen maksimalan broj rundi", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var maxNumberOfRounds = Convert.ToInt32(NumberOfRoundsTextbox.Text.Trim());
+
+                _tournamentViewModel.MatchmakeTeamsFirstRound();
+                _tournamentViewModel.IncrementRound();
+                _tournamentViewModel.RoundStartDateTime = DateTime.Now;
+                _tournamentViewModel.TournamentState = TournamentState.Started;
+                _tournamentViewModel.MaxNumberOfRounds = maxNumberOfRounds;
+
+                UpdateVisibility();
+            }
+            catch(FormatException fex)
             {
-                MessageBox.Show("Nije selektirana igra za turnir", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                MessageBox.Show(fex.Message, "Error", MessageBoxButton.OK);
             }
-
-            _tournamentViewModel.MatchmakeTeamsFirstRound();
-            _tournamentViewModel.IncrementRound();
-            _tournamentViewModel.RoundStartDateTime = DateTime.Now;
-            _tournamentViewModel.IsTournamentStarted = true;
-
-            UpdateVisibility();
+            catch(OverflowException oex)
+            {
+                MessageBox.Show(oex.Message, "Error", MessageBoxButton.OK);
+            }
+            
         }
 
+        private void RestartFirstRound_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Resetirati prvu rundu?", "Restart", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes) 
+            {
+                _tournamentViewModel.RestartFirstRound();
+                UpdateVisibility();
+            }
+        }
+
+        private void FinishTournament_Click(object sender, EventArgs e)
+        {
+            if (_tournamentViewModel.HasAnyUnresolvedPairs())
+            {
+                MessageBox.Show("Postoje parovi gdje rezultat još nije odlučen", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            _tournamentViewModel.HandleAllTeamsWinsLossesDrawsAndScore();
+
+            _tournamentViewModel.SortTeamsForScoreboard();
+
+            _tournamentViewModel.TournamentState = TournamentState.Finished;
+
+            _roundHistoryViewModel.CreateRoundHistoryEntry(_tournamentViewModel);
+
+            MessageBox.Show("Turnir završen", "Kraj", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            FinishTournamentButton.Visibility = Visibility.Collapsed;
+            TournamentFinishedText.Visibility = Visibility.Visible;
+
+            //TODO: Add creating tournament history
+        }
 
         private void NextRound_Click(object sender, RoutedEventArgs e)
         {
@@ -66,55 +121,19 @@ namespace TournamentManager
                 return;
             }
 
-            //TODO: Rework to have 2 lists, teams eligible to play and kicked teams then iterate and split if team is kicked
-            foreach (var team in _tournamentViewModel.AllTeams)
-            {
+            _tournamentViewModel.HandleAllTeamsWinsLossesDrawsAndScore();
 
-                if (team.IsLoser == true)
-                {
-                    //team.IncreaseTeamLoss();
-                    team.IncreaseTeamLossBy1();
-                }
-
-                if (team.IsWinner == true)
-                {
-                    //team.IncreaseTeamWin();
-                    team.IncreaseTeamWinBy1();
-                }
-
-                if (team.IsDraw == true)
-                {
-                    //team.IncreaseTeamDraw();
-                    team.IncreaseTeamDrawBy1();
-                }              
-
-                if(team.Opponent != null)
-                {
-                    if (team.Opponent.IsDummyTeam == false)
-                    {
-                        team.TeamsIdsAlreadyPlayedWith.Add(team.Opponent.TeamId);
-                    }
-
-                    team.SetScoreDifference(team.Opponent);
-                    team.TeamIdsWonAgainst.Add(team.Opponent.TeamId);
-                }
-
-                team.Opponent = null;
-            }
-
-            foreach (var dummy in _tournamentViewModel.DummyTeams)
-            {
-                dummy.Opponent = null;
-            }
+            _tournamentViewModel.SortTeamsForScoreboard();
 
             _roundHistoryViewModel.CreateRoundHistoryEntry(_tournamentViewModel);
 
             _tournamentViewModel.TeamPairings.Clear();
 
             _tournamentViewModel.MatchmakeTeamsNext();
+
             _tournamentViewModel.IncrementRound();
 
-            _tournamentViewModel.SortTeamsForScoreboard();
+            
             UpdateVisibility();
         }
 
@@ -223,27 +242,40 @@ namespace TournamentManager
         }
 
         private void UpdateVisibility()
-        {
-            if (_tournamentViewModel.RoundCount == 0)
-            {
-                StartTournamentButton.Visibility = Visibility.Visible;
-                NextRoundButton.Visibility = Visibility.Collapsed;
-                TournamentTypeSelect.IsEnabled = true;
-            }
-            else
+        {      
+            if(_tournamentViewModel.TournamentState == TournamentState.Started)
             {
                 StartTournamentButton.Visibility = Visibility.Collapsed;
                 NextRoundButton.Visibility = Visibility.Visible;
                 TournamentTypeSelect.IsEnabled = false;
-            }
-
-            if (_tournamentViewModel.RoundCount > 1)
-            {
+                NumberOfRoundsTextbox.IsEnabled = false;
                 Scoreboard.Visibility = Visibility.Visible;
+
+                if (_tournamentViewModel.RoundCount == _tournamentViewModel.MaxNumberOfRounds)
+                {
+                    NextRoundButton.Visibility = Visibility.Collapsed;
+                    FinishTournamentButton.Visibility = Visibility.Visible;
+                }
+
+                if(_tournamentViewModel.RoundCount == 1)
+                {
+                    RestartFirstRoundButton.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    RestartFirstRoundButton.Visibility = Visibility.Collapsed;
+                }
             }
             else
             {
+                StartTournamentButton.Visibility = Visibility.Visible;
+                NextRoundButton.Visibility = Visibility.Collapsed;
+                FinishTournamentButton.Visibility = Visibility.Collapsed;
+                TournamentTypeSelect.IsEnabled = true;
+                NumberOfRoundsTextbox.IsEnabled = true;
                 Scoreboard.Visibility = Visibility.Collapsed;
+                RestartFirstRoundButton.Visibility = Visibility.Collapsed;
+                TournamentFinishedText.Visibility = Visibility.Collapsed;
             }
         }
 

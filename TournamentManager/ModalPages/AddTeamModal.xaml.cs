@@ -46,19 +46,25 @@ namespace TournamentManager
                 return;
             }
 
-            var teamToAdd = new Team(_tournamentViewModel.NextTeamId, teamName, false, selectedOffice);
-
-            _tournamentViewModel.AddTeam(teamToAdd);
+            if (_tournamentViewModel.TournamentState == TournamentState.Started)
+            {
+                // Flag team as new team and matchmake
+                var teamToAdd = new Team(teamId: _tournamentViewModel.NextTeamId, name: teamName, isDummyTeam: false, isNewTeam: true, office: selectedOffice);
+                _tournamentViewModel.AddTeam(teamToAdd);
+                _tournamentViewModel.MatchmakeNewlyAddedTeam(teamToAdd);
+            }
+            else
+            {
+                var teamToAdd = new Team(teamId: _tournamentViewModel.NextTeamId, name: teamName, isDummyTeam: false, isNewTeam: false, office: selectedOffice);
+                _tournamentViewModel.AddTeam(teamToAdd);
+            }
+            
             _tournamentViewModel.SortTeamsForScoreboard();
 
             TeamNameTextbox.Text = String.Empty;
             OfficeComboBox.SelectedItem = null;
 
-            if (_tournamentViewModel.IsTournamentStarted == true)
-            {
-                teamToAdd.IsNewTeam = true;
-                _tournamentViewModel.MatchmakeNewlyAddedTeam(teamToAdd);
-            }
+           
 
             
         }

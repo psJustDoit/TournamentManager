@@ -10,12 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\delete.png" />
     <None Remove="Icons\edit.png" />
     <None Remove="Icons\history.png" />
     <None Remove="Icons\kick.png" />
     <None Remove="Icons\left.png" />
     <None Remove="Icons\plus.png" />
     <None Remove="Icons\poslovnice.png" />
+    <None Remove="Icons\redo.png" />
     <None Remove="Icons\right.png" />
     <None Remove="Icons\runde.png" />
     <None Remove="Icons\swap.png" />
@@ -29,12 +31,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\delete.png" />
     <Resource Include="Icons\edit.png" />
     <Resource Include="Icons\history.png" />
     <Resource Include="Icons\kick.png" />
     <Resource Include="Icons\left.png" />
     <Resource Include="Icons\plus.png" />
     <Resource Include="Icons\poslovnice.png" />
+    <Resource Include="Icons\redo.png" />
     <Resource Include="Icons\right.png" />
     <Resource Include="Icons\runde.png" />
     <Resource Include="Icons\swap.png" />

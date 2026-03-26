@@ -56,7 +56,7 @@ namespace TournamentManager.ViewModels
                 Team? team1 = null;
                 if (teamPairing.Team1 != null)
                 {
-                    team1 = new Team(teamPairing.Team1.TeamId, teamPairing.Team1.Name, teamPairing.Team1.IsDummyTeam, null);
+                    team1 = new Team(teamPairing.Team1.TeamId, teamPairing.Team1.Name, teamPairing.Team1.IsDummyTeam);
                     team1.IsDraw = teamPairing.Team1.IsDraw;
                     team1.IsLoser = teamPairing.Team1.IsLoser;
                     team1.IsWinner = teamPairing.Team1.IsWinner;
@@ -73,7 +73,7 @@ namespace TournamentManager.ViewModels
                 Team? team2 = null;
                 if (teamPairing.Team2 != null)
                 {
-                    team2 = new Team(teamPairing.Team2.TeamId, teamPairing.Team2.Name, teamPairing.Team2.IsDummyTeam, null);
+                    team2 = new Team(teamPairing.Team2.TeamId, teamPairing.Team2.Name, teamPairing.Team2.IsDummyTeam);
                     team2.IsDraw = teamPairing.Team2.IsDraw;
                     team2.IsLoser = teamPairing.Team2.IsLoser;
                     team2.IsWinner = teamPairing.Team2.IsWinner;
@@ -85,7 +85,6 @@ namespace TournamentManager.ViewModels
                     team2.Draws = teamPairing.Team2.Draws;
                     team2.TeamsIdsAlreadyPlayedWith = teamPairing.Team2.TeamsIdsAlreadyPlayedWith;
                     team2.TeamIdsWonAgainst = teamPairing.Team2.TeamIdsWonAgainst;
-
                 }
 
                 team1?.Opponent = team2;
@@ -96,7 +95,6 @@ namespace TournamentManager.ViewModels
                 teamPairingsHistoryInfo.Add(pairing);
             }
 
-            tournamentViewModel.SortTeamsForScoreboard();
             var currentScoreboard = tournamentViewModel.TeamScoreboardListing.ToList();
 
             roundHistoryInfo.Round = tournamentViewModel.RoundCount;

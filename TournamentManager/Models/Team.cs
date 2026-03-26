@@ -102,8 +102,8 @@ namespace TournamentManager.Models
             set { _isDummyTeam = value; }
         }
 
-        private bool _isNewTeam;
-        public bool IsNewTeam
+        private bool? _isNewTeam;
+        public bool? IsNewTeam
         {
             get => _isNewTeam;
             set { _isNewTeam = value; }
@@ -121,7 +121,7 @@ namespace TournamentManager.Models
         public List<int> TeamsIdsAlreadyPlayedWith{ get; set; } = new List<int>();
         public List<int> TeamIdsWonAgainst { get; set; } = new List<int>();
 
-        public Team(int teamId, string name, bool isDummyTeam, Office? office = null)
+        public Team(int teamId, string name, bool isDummyTeam, bool? isNewTeam = null, Office? office = null)
         {
             TeamId = teamId;
             Name = name;
@@ -133,6 +133,7 @@ namespace TournamentManager.Models
             ScoreDifference = 0;
             TeamTournamentScore = 0;
             IsDummyTeam = isDummyTeam;
+            IsNewTeam = isNewTeam;
             Opponent = null;
         }
 
@@ -182,6 +183,26 @@ namespace TournamentManager.Models
         public void ResetGameMatchScore()
         {
             GameMatchScore = null;
+        }
+
+        public void ResetAllTeamValues()
+        {
+            Wins = 0;
+            Losses = 0;
+            Draws = 0;
+            TeamTournamentScore = 0;
+            GameMatchScore = 0;
+            ScoreDifference = 0;
+        }
+
+        public void ResetAllTeamStatuses()
+        {
+            IsWinner = null;
+            IsLoser = null;
+            IsDraw = null;
+            IsKicked = null;
+            IsNewTeam = false;
+            Opponent = null;
         }
 
         public void SetScoreDifference(Team opponent)

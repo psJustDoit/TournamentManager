@@ -16,11 +16,10 @@
         <Label HorizontalAlignment="Center" Content="Ime tima:" Foreground="{StaticResource PrimaryFontColor}"/>
         <TextBox Width="200"  x:Name="TeamNameTextbox"
                    Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                   Height="30"
-                   Margin="10"/>
+                   Height="30"/>
 
         <!-- City -->
-        <Label HorizontalAlignment="Center" Content="Poslovnica:" Foreground="{StaticResource PrimaryFontColor}"/>
+        <Label HorizontalAlignment="Center" Content="Poslovnica:" Foreground="{StaticResource PrimaryFontColor}" Margin="0, 15, 0 , 0"/>
         <ComboBox x:Name="OfficeComboBox" ItemsSource="{Binding Offices, ElementName=EditTeamModalWindow}"
               Width="200"
               DisplayMemberPath="Name"
@@ -30,12 +29,11 @@
                    Height="30"
                    Margin="10"/>-->
 
-        <!-- Wins/Losses -->
-        <Label HorizontalAlignment="Center" Content="Wins/Losses:" Foreground="{StaticResource PrimaryFontColor}"/>
+        <!-- Wins -->
+        <Label HorizontalAlignment="Center" Content="Wins / Losses / Draws:" Foreground="{StaticResource PrimaryFontColor}" Margin="0, 15, 0, 0"/>
         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-            <StackPanel Orientation="Vertical">
-                <Button Width="25" Height="25" Content="+" FontSize="15"
-                    Margin="0, 0, 0, 3"
+
+            <Button Width="25" Height="25" Content="+" FontSize="15"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Click="IncrementTeamWins_Click"
@@ -43,28 +41,26 @@
                     Foreground="{StaticResource PrimaryFontColor}" 
                     BorderBrush="{StaticResource PrimaryFontColor}" />
 
-                <Button Width="25" Height="25" Content="-" FontSize="15"
+            <TextBox Width="50" x:Name="TeamWinsTextbox"
+               Text="{Binding Wins, UpdateSourceTrigger=PropertyChanged}"
+               Height="30"
+               Margin="10, 0, 10, 0"/>
+
+            <Button Width="25" Height="25" Content="-" FontSize="15"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Click="SubtractTeamWins_Click"
                     Background="{StaticResource ButtonBackgroundColor}" 
                     Foreground="{StaticResource PrimaryFontColor}" 
                     BorderBrush="{StaticResource PrimaryFontColor}" />
-            </StackPanel>
-            <TextBox Width="50" x:Name="TeamWinsTextbox"
-               Text="{Binding Wins, UpdateSourceTrigger=PropertyChanged}"
-               Height="30"
-               Margin="10"/>
 
-            <Path Data="M 2,45 L 10,6" Stroke="{StaticResource PrimaryFontColor}" StrokeThickness="2" Margin="4,0" />
 
-            <TextBox Width="50" x:Name="TeamLossesTextbox"
-               Text="{Binding Losses, UpdateSourceTrigger=PropertyChanged}"
-               Height="30"
-               Margin="10"/>
-            <StackPanel Orientation="Vertical">
-                <Button Width="25" Height="25" Content="+" FontSize="15"
-                        Margin="0, 0, 0, 3"
+
+            <Path Data="M 2,45 L 7,2" Stroke="{StaticResource PrimaryFontColor}" StrokeThickness="2" Margin="4,0" />
+
+
+            <!-- Losses -->
+            <Button Width="25" Height="25" Content="+" FontSize="15"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Click="IncrementTeamLosses_Click"
@@ -72,19 +68,48 @@
                     Foreground="{StaticResource PrimaryFontColor}" 
                     BorderBrush="{StaticResource PrimaryFontColor}" />
 
-                <Button Width="25" Height="25" Content="-" FontSize="15"
+            <TextBox Width="50" x:Name="TeamLossesTextbox"
+                Text="{Binding Draws, UpdateSourceTrigger=PropertyChanged}"
+                Height="30"
+                Margin="5, 0, 5, 0"/>
+
+            <Button Width="25" Height="25" Content="-" FontSize="15"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Click="SubtractTeamLosses_Click"
                     Background="{StaticResource ButtonBackgroundColor}" 
                     Foreground="{StaticResource PrimaryFontColor}" 
                     BorderBrush="{StaticResource PrimaryFontColor}" />
-            </StackPanel>
-            
+
+            <Path Data="M 2,45 L 7,2" Stroke="{StaticResource PrimaryFontColor}" StrokeThickness="2" Margin="4,0" />
+
+            <!-- Draws -->
+            <Button Width="25" Height="25" Content="+" FontSize="15"
+             VerticalAlignment="Center"
+             HorizontalAlignment="Center"
+             Click="IncrementTeamDraws_Click"
+             Background="{StaticResource ButtonBackgroundColor}" 
+             Foreground="{StaticResource PrimaryFontColor}" 
+             BorderBrush="{StaticResource PrimaryFontColor}" />
+
+
+            <TextBox Width="50" x:Name="TeamDrawsTextbox"
+             Text="{Binding Losses, UpdateSourceTrigger=PropertyChanged}"
+             Height="30"
+             Margin="5, 0, 5, 0"/>
+
+            <Button Width="25" Height="25" Content="-" FontSize="15"
+             VerticalAlignment="Center"
+             HorizontalAlignment="Center"
+             Click="SubtractTeamDraws_Click"
+             Background="{StaticResource ButtonBackgroundColor}" 
+             Foreground="{StaticResource PrimaryFontColor}" 
+             BorderBrush="{StaticResource PrimaryFontColor}" />
+
         </StackPanel>
 
         <!-- Team score -->
-        <Label HorizontalAlignment="Center" Content="Score:" Foreground="{StaticResource PrimaryFontColor}"/>
+        <Label HorizontalAlignment="Center" Content="Score:" Foreground="{StaticResource PrimaryFontColor}" Margin="0, 15, 0, 0"/>
         <TextBox Width="200" x:Name="ScoreTextbox" 
                Text="{Binding TeamTournamentScore}"
                Height="30"
@@ -95,7 +120,7 @@
                   Background="{StaticResource ButtonBackgroundColor}"
                   CornerRadius="5"
                   BorderBrush="{StaticResource PrimaryFontColor}"
-                  Margin="0, 20, 0, 0">
+                  Margin="0, 15, 0, 0">
             <Button Content="Ažuriraj"
                   FontSize="20"
                   x:Name="UpdateTeamButton"

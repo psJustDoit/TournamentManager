@@ -21,7 +21,7 @@ namespace TournamentManager
         }
 
         private readonly TeamEnum _teamToSwapPosition;
-        public uint? SelectedTeamId { get; set; }
+        public int? SelectedTeamId { get; set; }
         public SwapTeamModal(TeamPairing pairing, TournamentViewModel tournamentViewModel, Team teamToSwap, TeamEnum teamToSwapPosition)
         {
             List<Team> possibleTeamSwaps = new List<Team>();
@@ -54,7 +54,7 @@ namespace TournamentManager
 
             if (selectedTeam != null)
             {
-                SelectedTeamId = (uint)selectedTeam.TeamId;
+                SelectedTeamId = selectedTeam.TeamId;
             }
         }
 
