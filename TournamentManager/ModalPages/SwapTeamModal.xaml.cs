@@ -34,10 +34,19 @@ namespace TournamentManager
             switch (teamToSwapPosition)
             {
                 case TeamEnum.Team1:
-                    possibleTeamSwaps = tournamentViewModel.AllTeams.Where(t => t.TeamId != teamToSwap.TeamId && t.TeamId != _pairing.Team2.TeamId && !pairing.Team2.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId)).ToList(); 
+                    possibleTeamSwaps = tournamentViewModel.AllTeams.Where(t => t.TeamId != teamToSwap.TeamId)
+                        .Where(t => t.TeamId != _pairing.Team2?.TeamId)
+                        .Where(t => t.IsKicked != true)
+                        .Where(t => pairing.Team2?.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId) == false)
+                        .ToList();
+                   
                     break;
                 case TeamEnum.Team2:
-                    possibleTeamSwaps = tournamentViewModel.AllTeams.Where(t => t.TeamId != teamToSwap.TeamId && t.TeamId != _pairing.Team1.TeamId && !pairing.Team1.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId)).ToList();
+                    possibleTeamSwaps = tournamentViewModel.AllTeams.Where(t => t.TeamId != teamToSwap.TeamId)
+                        .Where(t => t.TeamId != _pairing.Team1?.TeamId)
+                        .Where(t => t.IsKicked != true)
+                        .Where(t => pairing.Team1?.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId) == false)
+                        .ToList();
                     break;
                 default:
                     break;
@@ -66,12 +75,12 @@ namespace TournamentManager
                 return;
             }
 
-            var teamPairingOfSelectedTeam = _tournamentViewModel.TeamPairings.Where(tp => tp.Team1.TeamId == SelectedTeamId || tp.Team2.TeamId == SelectedTeamId).FirstOrDefault();
+            var teamPairingOfSelectedTeam = _tournamentViewModel.TeamPairings.Where(tp => tp.Team1?.TeamId == SelectedTeamId || tp.Team2?.TeamId == SelectedTeamId).FirstOrDefault();
 
             Team? selectedTeamOpponent = null;
             if (teamPairingOfSelectedTeam != null) 
             {
-                if (teamPairingOfSelectedTeam.Team1.TeamId == SelectedTeamId) 
+                if (teamPairingOfSelectedTeam.Team1?.TeamId == SelectedTeamId) 
                 {
                     selectedTeamOpponent = teamPairingOfSelectedTeam.Team2;
                 }
@@ -80,8 +89,13 @@ namespace TournamentManager
                     selectedTeamOpponent = teamPairingOfSelectedTeam.Team1;
                 }
             }
+            else
+            {
+                MessageBox.Show("Nije pronađen par odabranog tima", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
 
-            if(selectedTeamOpponent != null || !selectedTeamOpponent.IsDummyTeam)
+            if (selectedTeamOpponent != null && !selectedTeamOpponent.IsDummyTeam)
             {
                 if (selectedTeamOpponent.TeamsIdsAlreadyPlayedWith.Contains(_teamToSwap.TeamId))
                 {
@@ -92,32 +106,33 @@ namespace TournamentManager
 
             // Swap teams
             Team teamCopy = null;
-            if(teamPairingOfSelectedTeam.Team1.TeamId == SelectedTeamId)
+            if(teamPairingOfSelectedTeam.Team1?.TeamId == SelectedTeamId)
             {
-                teamCopy = teamPairingOfSelectedTeam.Team1;
-                teamPairingOfSelectedTeam.Team1 = _teamToSwap;
-                teamPairingOfSelectedTeam.Team2.Opponent = _teamToSwap;
-                _teamToSwap.Opponent = teamPairingOfSelectedTeam.Team2;       
+                teamCopy = teamPairingOfSelectedTeam.Team1; // Get selected team from its team pairing
+                teamPairingOfSelectedTeam.Team1 = _teamToSwap; // Place team to be swapped in place of selected team
+                teamPairingOfSelectedTeam.Team2?.Opponent = _teamToSwap; // Set the other teams opponent to now swapped team
+                _teamToSwap.Opponent = teamPairingOfSelectedTeam.Team2; // Update now swapped teams opponent
             }
             else
             {
                 teamCopy = teamPairingOfSelectedTeam.Team2;
                 teamPairingOfSelectedTeam.Team2 = _teamToSwap;
-                teamPairingOfSelectedTeam.Team1.Opponent = _teamToSwap;
+                teamPairingOfSelectedTeam.Team1?.Opponent = _teamToSwap;
                 _teamToSwap.Opponent = teamPairingOfSelectedTeam.Team1;
             }
 
+            // Update the pairing of team to be swapped with selected team
             switch (_teamToSwapPosition)
             {
                 case TeamEnum.Team1:
                     _pairing.Team1 = teamCopy;
-                    _pairing.Team1.Opponent = _pairing.Team2;
-                    _pairing.Team2.Opponent = _pairing.Team1;
+                    _pairing.Team1?.Opponent = _pairing.Team2;
+                    _pairing.Team2?.Opponent = _pairing.Team1;
                     break;
                 case TeamEnum.Team2:
                     _pairing.Team2 = teamCopy;
-                    _pairing.Team2.Opponent = _pairing.Team1;
-                    _pairing.Team1.Opponent = _pairing.Team2;
+                    _pairing.Team2?.Opponent = _pairing.Team1;
+                    _pairing.Team1?.Opponent = _pairing.Team2;
                     break;
                 default:
                     break;

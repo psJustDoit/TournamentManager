@@ -78,12 +78,14 @@ namespace TournamentManager
 
         private void SeedCountries(SqliteConnection connection)
         {
-            string check = "SELECT COUNT(Id) FROM Countries;";
-            long count = (long)new SqliteCommand(check, connection).ExecuteScalar();
-
-            if (count == 0)
+            try
             {
-                string insert = @"
+                string check = "SELECT COUNT(Id) FROM Countries;";
+                long count = (long)new SqliteCommand(check, connection).ExecuteScalar();
+
+                if (count == 0)
+                {
+                    string insert = @"
                     INSERT INTO Countries (Id, Name) VALUES
                     ('1', 'Afghanistan'), ('2', 'Albania'), ('3', 'Algeria'), ('4', 'Andorra'), ('5', 'Angola'), ('6', 'Antigua and Barbuda'), ('7', 'Argentina'), 
                     ('8', 'Armenia'), ('9', 'Australia'),('10', 'Austria'), 
@@ -111,23 +113,31 @@ namespace TournamentManager
                     ('178', 'Turkey'), ('179', 'Turkmenistan'), ('180', 'Tuvalu'), ('181', 'Uganda'), ('182', 'Ukraine'), ('183', 'United Arab Emirates'), ('184', 'United Kingdom'), 
                     ('185', 'United States'), ('186', 'Uruguay'), ('187', 'Uzbekistan'), ('188', 'Vanuatu'), ('190', 'Vatican City'), ('191', 'Venezuela'), ('192', 'Vietnam'), ('193', 'Yemen'), 
                     ('194', 'Zambia'), ('195', 'Zimbabwe');";
-                new SqliteCommand(insert, connection).ExecuteNonQuery();
+                    new SqliteCommand(insert, connection).ExecuteNonQuery();
+                }
+            
+            }
+            catch(SqliteException ex)
+            {
+                MessageBox.Show($"SeedCountries - {ex.Message}", "Greška", MessageBoxButton.OK);
             }
         }
 
-        private void SetupDatabase()
-        {          
-            using (var connection = new SqliteConnection(connectionString))
+        private async void SetupDatabase()
+        {
+            try
             {
-                connection.Open();// creates the DB file if missing
-
-                // Enable foreign key enforcement
-                using (var cmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection))
+                using (var connection = new SqliteConnection(connectionString))
                 {
-                    cmd.ExecuteNonQuery();
-                }
+                    connection.Open();// creates the DB file if missing
 
-                string createOfficesTable = @"
+                    // Enable foreign key enforcement
+                    using (var cmd = new SqliteCommand("PRAGMA foreign_keys = ON;", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string createOfficesTable = @"
                     CREATE TABLE IF NOT EXISTS Offices (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL,
@@ -136,13 +146,13 @@ namespace TournamentManager
                         FOREIGN KEY(CountryId) REFERENCES Countries(Id)
                     );";
 
-                string createCountriesTable = @"
+                    string createCountriesTable = @"
                     CREATE TABLE IF NOT EXISTS Countries (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL
                     );";
 
-                string createTeamsTable = @"
+                    string createTeamsTable = @"
                     CREATE TABLE IF NOT EXISTS Teams (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL,
@@ -151,7 +161,7 @@ namespace TournamentManager
                         FOREIGN KEY(OfficeId) REFERENCES Offices(Id)
                     );";
 
-                string createTournamentsHistoryTable = @"
+                    string createTournamentsHistoryTable = @"
                     CREATE TABLE IF NOT EXISTS TournamentsHistory (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         GameName INTEGER,
@@ -159,7 +169,7 @@ namespace TournamentManager
                         EndDate TEXT NOT NULL
                     );";
 
-                string createLogsTable = @"
+                    string createLogsTable = @"
                     CREATE TABLE IF NOT EXISTS Logs (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         DateTimeOccurred TEXT,
@@ -169,24 +179,30 @@ namespace TournamentManager
                         LogMessage TEXT NOT NULL
                     );";
 
-                using (var cmd = new SqliteCommand(createOfficesTable, connection))
-                { cmd.ExecuteNonQuery(); }
+                    using (var cmd = new SqliteCommand(createOfficesTable, connection))
+                    { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createCountriesTable, connection))
-                { cmd.ExecuteNonQuery(); }
+                    using (var cmd = new SqliteCommand(createCountriesTable, connection))
+                    { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createTeamsTable, connection))
-                { cmd.ExecuteNonQuery(); }
+                    using (var cmd = new SqliteCommand(createTeamsTable, connection))
+                    { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createTournamentsHistoryTable, connection))
-                { cmd.ExecuteNonQuery(); }
+                    using (var cmd = new SqliteCommand(createTournamentsHistoryTable, connection))
+                    { cmd.ExecuteNonQuery(); }
 
-                using (var cmd = new SqliteCommand(createLogsTable, connection))
-                { cmd.ExecuteNonQuery(); }
+                    using (var cmd = new SqliteCommand(createLogsTable, connection))
+                    { cmd.ExecuteNonQuery(); }
 
-                SeedCountries(connection);
+                    SeedCountries(connection);
 
+                }
+            }  
+            catch(SqliteException ex)
+            {
+                MessageBox.Show($"SetupDatabase - {ex.Message}", "Greška", MessageBoxButton.OK);
             }
+           
         }
     }
 

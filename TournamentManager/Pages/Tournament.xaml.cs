@@ -328,15 +328,13 @@ namespace TournamentManager
                 {
                     case TeamEnum.Team1:
                         teamToKick = teamPairing?.Team1;
-                        teamPairing.Team1 = null;
                         break;
                     case TeamEnum.Team2:
                         teamToKick = teamPairing?.Team2;
-                        teamPairing.Team2 = null;
                         break;
                 }
 
-                if (teamToKick == null || teamToKick.IsDummyTeam == true)
+                if(teamToKick == null || teamToKick.IsDummyTeam == true)
                 {
                     return;
                 }
@@ -344,17 +342,22 @@ namespace TournamentManager
                 var result = MessageBox.Show($"Izbaciti tim {teamToKick.Name}?", "Izbaci", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
-                    //// Add 1 point to every team who lost against the team being kicked
-                    //foreach (var teamId in teamToKick.TeamIdsWonAgainst)
-                    //{
-                    //    var teamToAddPointTo = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamId).FirstOrDefault();
-                    //    if (teamToAddPointTo != null)
-                    //    {
-                    //        teamToAddPointTo.IncreaseTeamTournamentScoreBy1();
-                    //    }
-                    //}
+                    switch (teamToKickPosition)
+                    {
+                        case TeamEnum.Team1:
+                            teamPairing.Team1 = null;
+                            break;
+                        case TeamEnum.Team2:
+                            teamPairing.Team2 = null;
+                            break;
+                    }
 
                     teamToKick.IsKicked = true;
+
+                    if(teamPairing.Team1 == null && teamPairing.Team2 == null)
+                    {
+                        _tournamentViewModel.TeamPairings.Remove(teamPairing);
+                    }
 
                     //_tournamentViewModel.AllTeams.Remove(teamToKick);
                     _tournamentViewModel.SortTeamsForScoreboard();
