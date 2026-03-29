@@ -65,6 +65,7 @@ namespace TournamentManager
 
                 var result = DbRepository.AddOffice(OfficeName, Address, selectedCountry.CountryId);
 
+                DialogResult = true;
                 //if(result != 0)
                 //{
                 //    MessageBox.Show("Poslovnica dodana", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
