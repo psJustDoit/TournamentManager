@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TournamentManager.Enums;
 
 
 namespace TournamentManager.Models
@@ -6,6 +7,9 @@ namespace TournamentManager.Models
     public class Team : INotifyPropertyChanged
     {
         public int TeamId { get; set; }
+
+        public int? TeamDisplayNumber { get; set; }
+        public string TeamDisplayName { get; set; } // Displays team name + team display number in format ex. Team [2]
 
         private string _name;
         public string Name
@@ -67,26 +71,29 @@ namespace TournamentManager.Models
             set { _opponent = value; OnPropertyChanged(nameof(Opponent)); }
         }
 
-        private bool? _isWinner;
-        public bool? IsWinner
-        {
-            get => _isWinner;
-            set { _isWinner = value; }
-        }
+        public TeamMatchOutcomeEnum? TeamMatchOutcomeCurrent { get; set; }
+        public TeamMatchOutcomeEnum? TeamMatchOutcomePrevious { get; set; }
 
-        private bool? _isLoser;
-        public bool? IsLoser
-        {
-            get => _isLoser;
-            set { _isLoser = value; }
-        }
+        //private bool? _isWinner;
+        //public bool? IsWinner
+        //{
+        //    get => _isWinner;
+        //    set { _isWinner = value; }
+        //}
 
-        private bool? _isDraw;
-        public bool? IsDraw
-        {
-            get => _isDraw;
-            set { _isDraw = value; }
-        }
+        //private bool? _isLoser;
+        //public bool? IsLoser
+        //{
+        //    get => _isLoser;
+        //    set { _isLoser = value; }
+        //}
+
+        //private bool? _isDraw;
+        //public bool? IsDraw
+        //{
+        //    get => _isDraw;
+        //    set { _isDraw = value; }
+        //}
 
         private bool? _isKicked;
         public bool? IsKicked
@@ -111,25 +118,27 @@ namespace TournamentManager.Models
 
         // Used to calculate score difference
         // Entry when the match for both teams is decided
-        private int? _gameMatchScore;
-        public int? GameMatchScore
+        private int _matchScore;
+        public int MatchScore
         {
-            get => _gameMatchScore;
-            set { _gameMatchScore = value; }
+            get => _matchScore;
+            set { _matchScore = value; }
         }
 
         public List<int> TeamsIdsAlreadyPlayedWith{ get; set; } = new List<int>();
         public List<int> TeamIdsWonAgainst { get; set; } = new List<int>();
 
-        public Team(int teamId, string name, bool isDummyTeam, bool? isNewTeam = null, Office? office = null)
+        public Team(int teamId, int? teamDisplayNumber, string name, bool isDummyTeam, bool? isNewTeam = null, Office? office = null)
         {
             TeamId = teamId;
             Name = name;
+            TeamDisplayNumber = teamDisplayNumber;
+            TeamDisplayName = isDummyTeam == true ? name : $"{name} [{teamDisplayNumber}]";
             Office = office;
             Wins = 0;
             Losses = 0;
             Draws = 0;
-            GameMatchScore = null;
+            MatchScore = 0;
             ScoreDifference = 0;
             TeamTournamentScore = 0;
             IsDummyTeam = isDummyTeam;
@@ -180,39 +189,34 @@ namespace TournamentManager.Models
             TeamTournamentScore += 1;
         }
 
-        public void ResetGameMatchScore()
-        {
-            GameMatchScore = null;
-        }
-
         public void ResetAllTeamValues()
         {
             Wins = 0;
             Losses = 0;
             Draws = 0;
             TeamTournamentScore = 0;
-            GameMatchScore = 0;
+            MatchScore = 0;
             ScoreDifference = 0;
         }
 
         public void ResetAllTeamStatuses()
         {
-            IsWinner = null;
-            IsLoser = null;
-            IsDraw = null;
+            TeamMatchOutcomeCurrent = null;
+            TeamMatchOutcomePrevious = null;
             IsKicked = null;
             IsNewTeam = false;
             Opponent = null;
         }
 
-        public void SetScoreDifference(Team opponent)
+        public void ResetAllTeamLists()
         {
-            if(opponent == null)
-            {
-                return;
-            }
+            TeamIdsWonAgainst.Clear();
+            TeamsIdsAlreadyPlayedWith.Clear();
+        }
 
-            ScoreDifference += GameMatchScore - opponent.GameMatchScore;
+        public void SetScoreDifference(int teamMatchScore, int opponentMatchScore)
+        {
+            ScoreDifference += teamMatchScore - opponentMatchScore;
         }
 
     }

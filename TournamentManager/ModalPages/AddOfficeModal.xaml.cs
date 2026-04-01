@@ -50,7 +50,7 @@ namespace TournamentManager
         {
             try
             {
-                if (OfficeName == null || OfficeName == "")
+                if (String.IsNullOrEmpty(OfficeName))
                 {
                     MessageBox.Show("Poslovnica je prazna", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;

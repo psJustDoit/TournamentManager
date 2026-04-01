@@ -1,4 +1,4 @@
 ﻿namespace TournamentManager.Enums
 {
-    public enum TeamMatchOutcomeEnum { Team1Win = 1, Team2Win = 2, Draw = 3 }
+    public enum TeamMatchOutcomeEnum { Winner = 1, Loser = 2, Draw = 3 }
 }

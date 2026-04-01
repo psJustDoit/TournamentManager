@@ -26,7 +26,6 @@ namespace TournamentManager
 
             DataContext = _tournamentViewModel;
             UpdateVisibility();
-            _roundHistoryViewModel = roundHistoryViewModel;
         }
 
 
@@ -46,7 +45,7 @@ namespace TournamentManager
                     return;
                 }
 
-                if(String.IsNullOrEmpty(NumberOfRoundsTextbox.Text))
+                if(String.IsNullOrEmpty(NumberOfRoundsTextbox.Text) || NumberOfRoundsTextbox.Text.Trim() == "0")
                 {
                     MessageBox.Show("Nije unesen maksimalan broj rundi", "Greška", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
@@ -56,7 +55,7 @@ namespace TournamentManager
 
                 _tournamentViewModel.MatchmakeTeamsFirstRound();
                 _tournamentViewModel.IncrementRound();
-                _tournamentViewModel.RoundStartDateTime = DateTime.Now;
+                _tournamentViewModel.TournamentStartDateTime = DateTime.Now;
                 _tournamentViewModel.TournamentState = TournamentState.Started;
                 _tournamentViewModel.MaxNumberOfRounds = maxNumberOfRounds;
 
@@ -73,13 +72,35 @@ namespace TournamentManager
             
         }
 
-        private void RestartFirstRound_Click(object sender, EventArgs e)
+
+        private void ResetRound_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Resetirati prvu rundu?", "Restart", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (_tournamentViewModel.TournamentState == TournamentState.NotStarted || _tournamentViewModel.TournamentState == TournamentState.Finished)
+            {
+                MessageBox.Show("Nije moguće resetirati rundu", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var result = MessageBox.Show("Resetirati rundu? Ovo će iznova upariti timove.", "Runda - reset", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                _tournamentViewModel.ResetRound();
+            }
+        }
+
+
+        private void RestartTournament_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Resetirati turnir?", "Turir - reset", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes) 
             {
-                _tournamentViewModel.RestartFirstRound();
+                //var resultResetTeams = MessageBox.Show("Resetirati timove?", "Restart timove", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                //bool resetTeams = resultResetTeams == MessageBoxResult.Yes ? true : false;
+
+                _tournamentViewModel.RestartTournament();
+                _roundHistoryViewModel.RestartRoundsHistory();
                 UpdateVisibility();
             }
         }
@@ -92,7 +113,7 @@ namespace TournamentManager
                 return;
             }
 
-            _tournamentViewModel.HandleAllTeamsWinsLossesDrawsAndScore();
+            _tournamentViewModel.HandleAllTeamsWinsLossesDrawsAndScores();
 
             _tournamentViewModel.SortTeamsForScoreboard();
 
@@ -110,18 +131,13 @@ namespace TournamentManager
 
         private void NextRound_Click(object sender, RoutedEventArgs e)
         {
-            var unresolvedPairOutcomes = _tournamentViewModel.TeamPairings.Where(tp => tp.Team1 != null && tp.Team2 != null)
-                .Where(tp => tp.Team1.IsWinner == null && tp.Team1.IsLoser == null && tp.Team1.IsDraw == null)
-                .Where(tp => tp.Team2.IsWinner == null && tp.Team2.IsLoser == null && tp.Team2.IsDraw == null)
-                .ToList();
-
-            if (unresolvedPairOutcomes.Any())
+            if (_tournamentViewModel.HasAnyUnresolvedPairs())
             {
                 MessageBox.Show("Postoje parovi gdje rezultat još nije odlučen", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            _tournamentViewModel.HandleAllTeamsWinsLossesDrawsAndScore();
+            _tournamentViewModel.HandleAllTeamsWinsLossesDrawsAndScores();
 
             _tournamentViewModel.SortTeamsForScoreboard();
 
@@ -129,7 +145,7 @@ namespace TournamentManager
 
             _tournamentViewModel.TeamPairings.Clear();
 
-            _tournamentViewModel.MatchmakeTeamsNext();
+            _tournamentViewModel.MatchmakeTeams();
 
             _tournamentViewModel.IncrementRound();
 
@@ -141,7 +157,7 @@ namespace TournamentManager
         private void TeamMatchOutcome_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            var matchOutcome = (TeamMatchOutcomeEnum)button.Tag;
+            var matchOutcome = (TeamPairingMatchOutcomeEnum)button.Tag;
 
             // walk up to find the root Border of the item
             var rootBorder = FindParent<Border>(button);
@@ -161,38 +177,23 @@ namespace TournamentManager
 
             switch (matchOutcome)
             {
-                case TeamMatchOutcomeEnum.Team1Win:
-                    team1.IsWinner = true;
-                    team1.IsDraw = null;
-                    team1.IsLoser = null;
-
-                    team2.IsWinner = null;
-                    team2.IsDraw = null;
-                    team2.IsLoser = true;
+                case TeamPairingMatchOutcomeEnum.Team1Win:
+                    team1.TeamMatchOutcomeCurrent = TeamMatchOutcomeEnum.Winner;
+                    team2.TeamMatchOutcomeCurrent = TeamMatchOutcomeEnum.Loser;
 
                     team1Border.Background = Brushes.Green;
                     team2Border.Background = Brushes.Red;
                     break;
-                case TeamMatchOutcomeEnum.Team2Win:
-                    team2.IsWinner = true;
-                    team2.IsDraw = null;
-                    team2.IsLoser = null;
-
-                    team1.IsWinner = null;
-                    team1.IsDraw = null;
-                    team1.IsLoser = true;
+                case TeamPairingMatchOutcomeEnum.Team2Win:
+                    team2.TeamMatchOutcomeCurrent = TeamMatchOutcomeEnum.Winner;
+                    team1.TeamMatchOutcomeCurrent = TeamMatchOutcomeEnum.Loser;
 
                     team2Border.Background = Brushes.Green;
                     team1Border.Background = Brushes.Red;
                     break;
-                case TeamMatchOutcomeEnum.Draw:
-                    team1.IsWinner = null;
-                    team1.IsDraw = true;
-                    team1.IsLoser = null;
-
-                    team2.IsWinner = null;
-                    team2.IsDraw = true;
-                    team2.IsLoser = null;
+                case TeamPairingMatchOutcomeEnum.Draw:
+                    team1.TeamMatchOutcomeCurrent = TeamMatchOutcomeEnum.Draw;
+                    team2.TeamMatchOutcomeCurrent = TeamMatchOutcomeEnum.Draw;
 
                     team1Border.Background = Brushes.Yellow;
                     team2Border.Background = Brushes.Yellow;
@@ -243,42 +244,65 @@ namespace TournamentManager
 
         private void UpdateVisibility()
         {      
-            if(_tournamentViewModel.TournamentState == TournamentState.Started)
+            if (_tournamentViewModel.TournamentState == TournamentState.NotStarted)
             {
-                StartTournamentButton.Visibility = Visibility.Collapsed;
-                NextRoundButton.Visibility = Visibility.Visible;
-                TournamentTypeSelect.IsEnabled = false;
-                NumberOfRoundsTextbox.IsEnabled = false;
-                Scoreboard.Visibility = Visibility.Visible;
+                TournamentNotStartedVisibility();
+            }
 
-                if (_tournamentViewModel.RoundCount == _tournamentViewModel.MaxNumberOfRounds)
-                {
-                    NextRoundButton.Visibility = Visibility.Collapsed;
-                    FinishTournamentButton.Visibility = Visibility.Visible;
-                }
+            if (_tournamentViewModel.TournamentState == TournamentState.Started)
+            {
+                TournamentStartedVisibility();
+            }
 
-                if(_tournamentViewModel.RoundCount == 1)
-                {
-                    RestartFirstRoundButton.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    RestartFirstRoundButton.Visibility = Visibility.Collapsed;
-                }
+            if (_tournamentViewModel.TournamentState == TournamentState.Finished)
+            {
+                TournamentFinishedVisibility();
+            }
+
+        }
+
+        private void TournamentStartedVisibility()
+        {
+            StartTournamentButton.Visibility = Visibility.Collapsed;
+
+            if(_tournamentViewModel.RoundCount == _tournamentViewModel.MaxNumberOfRounds)
+            {
+                NextRoundButton.Visibility = Visibility.Collapsed;
+                FinishTournamentButton.Visibility = Visibility.Visible;
             }
             else
             {
-                StartTournamentButton.Visibility = Visibility.Visible;
-                NextRoundButton.Visibility = Visibility.Collapsed;
+                NextRoundButton.Visibility = Visibility.Visible;
                 FinishTournamentButton.Visibility = Visibility.Collapsed;
-                TournamentTypeSelect.IsEnabled = true;
-                NumberOfRoundsTextbox.IsEnabled = true;
-                Scoreboard.Visibility = Visibility.Collapsed;
-                RestartFirstRoundButton.Visibility = Visibility.Collapsed;
-                TournamentFinishedText.Visibility = Visibility.Collapsed;
             }
+
+            TournamentFinishedText.Visibility = Visibility.Collapsed;
+            TournamentTypeSelect.IsEnabled = false;
+            NumberOfRoundsTextbox.IsEnabled = false;
+            Scoreboard.Visibility = Visibility.Visible;
         }
 
+        private void TournamentFinishedVisibility()
+        {
+            TournamentFinishedText.Visibility = Visibility.Visible;
+            FinishTournamentButton.Visibility = Visibility.Collapsed;
+            StartTournamentButton.Visibility = Visibility.Collapsed;
+            NextRoundButton.Visibility = Visibility.Collapsed;
+            TournamentTypeSelect.IsEnabled = false;
+            NumberOfRoundsTextbox.IsEnabled = false;
+            Scoreboard.Visibility = Visibility.Visible;
+        }
+
+        private void TournamentNotStartedVisibility()
+        {
+            StartTournamentButton.Visibility = Visibility.Visible;
+            NextRoundButton.Visibility = Visibility.Collapsed;
+            FinishTournamentButton.Visibility = Visibility.Collapsed;
+            TournamentFinishedText.Visibility = Visibility.Collapsed;
+            TournamentTypeSelect.IsEnabled = true;
+            NumberOfRoundsTextbox.IsEnabled = true;
+            Scoreboard.Visibility = Visibility.Collapsed;
+        }
 
         private void TeamSwap_Click(object sender, RoutedEventArgs e)
         {

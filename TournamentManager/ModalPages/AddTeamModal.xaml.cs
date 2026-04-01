@@ -37,10 +37,8 @@ namespace TournamentManager
                 return;
             }
 
-            _tournamentViewModel.IncrementNextTeamCount();
-
             var selectedOffice = OfficeComboBox.SelectedItem as Office;
-            if(selectedOffice == null)
+            if (selectedOffice == null)
             {
                 MessageBox.Show("Poslovnica nije odabrana", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
@@ -49,14 +47,12 @@ namespace TournamentManager
             if (_tournamentViewModel.TournamentState == TournamentState.Started)
             {
                 // Flag team as new team and matchmake
-                var teamToAdd = new Team(teamId: _tournamentViewModel.NextTeamId, name: teamName, isDummyTeam: false, isNewTeam: true, office: selectedOffice);
-                _tournamentViewModel.AddTeam(teamToAdd);
+                var teamToAdd = _tournamentViewModel.AddTeam(teamName, selectedOffice, true);
                 _tournamentViewModel.MatchmakeNewlyAddedTeam(teamToAdd);
             }
             else
             {
-                var teamToAdd = new Team(teamId: _tournamentViewModel.NextTeamId, name: teamName, isDummyTeam: false, isNewTeam: false, office: selectedOffice);
-                _tournamentViewModel.AddTeam(teamToAdd);
+                _tournamentViewModel.AddTeam(teamName, selectedOffice, false);
             }
             
             _tournamentViewModel.SortTeamsForScoreboard();

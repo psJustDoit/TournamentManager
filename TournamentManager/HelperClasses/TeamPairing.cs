@@ -11,6 +11,7 @@ namespace TournamentManager.HelperClasses
             get => _team1;
             set { _team1 = value; OnPropertyChanged(nameof(Team1)); }
         }
+        public int Team1MatchScore { get; set; }
 
         private Team? _team2 { get; set; }
         public Team? Team2
@@ -18,6 +19,7 @@ namespace TournamentManager.HelperClasses
             get => _team2;
             set { _team2 = value; OnPropertyChanged(nameof(Team2)); }
         }
+        public int Team2MatchScore { get; set; }
 
         public TeamPairing(Team team1, Team team2) 
         {

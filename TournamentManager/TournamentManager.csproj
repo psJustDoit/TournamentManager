@@ -22,6 +22,7 @@
     <None Remove="Icons\runde.png" />
     <None Remove="Icons\swap.png" />
     <None Remove="Icons\timovi.png" />
+    <None Remove="Icons\undo.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +44,7 @@
     <Resource Include="Icons\runde.png" />
     <Resource Include="Icons\swap.png" />
     <Resource Include="Icons\timovi.png" />
+    <Resource Include="Icons\undo.png" />
   </ItemGroup>
 
 </Project>

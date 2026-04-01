@@ -19,7 +19,7 @@
             <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center"
                   x:Name="TeamSwapSelect" ItemsSource="{Binding .}"
                   Width="150"
-                  SelectedItem="{Binding SelectedTeamId}"
+                  SelectedItem="{Binding SelectedTeam}"
                   Margin="0, 20, 0 , 0"
                   SelectionChanged="Team_SelectionChanged"
                   DisplayMemberPath="Name"/>

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Media.TextFormatting;
 using TournamentManager.Enums;
+using TournamentManager.Extensions;
 using TournamentManager.HelperClasses;
 using TournamentManager.Models;
 
@@ -14,23 +15,30 @@ namespace TournamentManager.ViewModels
         private readonly RoundHistoryViewModel _roundHistoryViewModel;
 
         private int dummyTeamCount = 0;
-        private List<Team> _winners = new List<Team>();
-        public List<Team> Winners
-        {
-            get => _winners;
-        }
 
-        private List<Team> _losers = new List<Team>();
-        public List<Team> Losers
-        {
-            get => _losers;
-        }
+        //private List<Team> _winners = new List<Team>();
+        //public List<Team> Winners
+        //{
+        //    get => _winners;
+        //}
 
-        private List<Team> _draws = new List<Team>();
-        public List<Team> Draws
-        {
-            get => _draws;
-        }
+        //private List<Team> _losers = new List<Team>();
+        //public List<Team> Losers
+        //{
+        //    get => _losers;
+        //}
+
+        //private List<Team> _draws = new List<Team>();
+        //public List<Team> Draws
+        //{
+        //    get => _draws;
+        //}
+
+        //private List<Team> _kickedTeams = new List<Team>();
+        //public List<Team> KickedTeams
+        //{
+        //    get => _kickedTeams;
+        //}
 
         private List<Team> _newlyAddedTeams = new List<Team>();
         public List<Team> NewlyAddedTeams
@@ -64,6 +72,8 @@ namespace TournamentManager.ViewModels
             set { nextTeamId = value; }
         }
 
+        public int NextTeamDisplayNumber { get; set; }
+
         private int _roundCount = 0;
         public int RoundCount
         {
@@ -73,16 +83,16 @@ namespace TournamentManager.ViewModels
                 if (_roundCount != value)
                 {
                     _roundCount = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RoundCount)));
+                    OnPropertyChanged(nameof(RoundCount)); ;
                 }
             }
         }
 
-        private int _maxNumberOfRounds;
-        public int MaxNumberOfRounds
+        private int? _maxNumberOfRounds;
+        public int? MaxNumberOfRounds
         {
             get { return _maxNumberOfRounds; }
-            set { _maxNumberOfRounds = value; }
+            set { _maxNumberOfRounds = value; OnPropertyChanged(nameof(MaxNumberOfRounds)); }
         }
 
         //private bool _isRoundFinished;
@@ -92,11 +102,11 @@ namespace TournamentManager.ViewModels
         //    set => _isRoundFinished = value;
         //}
 
-        private DateTime? _roundStartDateTime { get; set; }
-        public DateTime? RoundStartDateTime
+        private DateTime? _tournamentStartDateTime { get; set; }
+        public DateTime? TournamentStartDateTime
         {
-            get => _roundStartDateTime;
-            set { _roundStartDateTime = value; OnPropertyChanged(nameof(RoundStartDateTime)); }
+            get => _tournamentStartDateTime;
+            set { _tournamentStartDateTime = value; OnPropertyChanged(nameof(TournamentStartDateTime)); }
         }
 
         private DateTime? _roundEndDateTime { get; set; }
@@ -124,7 +134,7 @@ namespace TournamentManager.ViewModels
         public TournamentType? SelectedTournamentType
         {
             get { return _selectedTournamentType; }
-            set { _selectedTournamentType = value; }
+            set { _selectedTournamentType = value; OnPropertyChanged(nameof(SelectedTournamentType)); }
         }
 
         // Observable properties
@@ -171,7 +181,7 @@ namespace TournamentManager.ViewModels
 
             var possibleOpponents = AllTeams.Where(t => t.TeamId != newTeam.TeamId).ToList();
 
-            if(RoundCount == 1)
+            if (RoundCount == 1)
             {
                 possibleOpponents = possibleOpponents.Where(t => t.Office?.Id != newTeam.Office?.Id).ToList();
             }
@@ -205,44 +215,53 @@ namespace TournamentManager.ViewModels
             RoundCount += 1;
         }
 
-        public void IncrementNextTeamCount()
+        public void IncrementNextTeamId()
         {
             NextTeamId += 1;
         }
 
-        public void HandleAllTeamsWinsLossesDrawsAndScore()
+        public void IncrementNextTeamDisplayNumber()
         {
-            //TODO: Maybe rework to have 2 lists, teams eligible to play and kicked teams then iterate and split if team is kicked
+            NextTeamDisplayNumber += 1;
+        }
+
+        public void HandleAllTeamsWinsLossesDrawsAndScores()
+        {
+            // Set score differences
+            foreach (var pairing in TeamPairings)
+            {
+                if (pairing.Team1 != null && pairing.Team1.IsDummyTeam == false)
+                {
+                    pairing.Team1.SetScoreDifference(pairing.Team1MatchScore, pairing.Team2MatchScore);
+                }
+
+                if (pairing.Team2 != null && pairing.Team2.IsDummyTeam == false)
+                {
+                    pairing.Team2.SetScoreDifference(pairing.Team2MatchScore, pairing.Team1MatchScore);
+                }
+            }
+
             foreach (var team in AllTeams)
             {
-
-                if (team.IsLoser == true)
+                switch (team.TeamMatchOutcomeCurrent)
                 {
-                    //team.IncreaseTeamLoss();
-                    team.IncreaseTeamLossBy1();
+                    case TeamMatchOutcomeEnum.Winner:
+                        team.IncreaseTeamWinBy1();
+                        team.TeamMatchOutcomePrevious = TeamMatchOutcomeEnum.Winner;
+                        break;
+                    case TeamMatchOutcomeEnum.Loser:
+                        team.IncreaseTeamLossBy1();
+                        team.TeamMatchOutcomePrevious = TeamMatchOutcomeEnum.Loser;
+                        break;
+                    case TeamMatchOutcomeEnum.Draw:
+                        team.IncreaseTeamDrawBy1();
+                        team.TeamMatchOutcomePrevious = TeamMatchOutcomeEnum.Draw;
+                        break;
                 }
 
-                if (team.IsWinner == true)
+                if (team.Opponent != null && team.Opponent.IsDummyTeam == false)
                 {
-                    //team.IncreaseTeamWin();
-                    team.IncreaseTeamWinBy1();
-                }
-
-                if (team.IsDraw == true)
-                {
-                    //team.IncreaseTeamDraw();
-                    team.IncreaseTeamDrawBy1();
-                }
-
-                if (team.Opponent != null)
-                {
-                    if (team.Opponent.IsDummyTeam == false)
-                    {
-                        team.TeamsIdsAlreadyPlayedWith.Add(team.Opponent.TeamId);
-                    }
-
-                    team.SetScoreDifference(team.Opponent);
-                    team.TeamIdsWonAgainst.Add(team.Opponent.TeamId);
+                    team.TeamsIdsAlreadyPlayedWith.Add(team.Opponent.TeamId);
                 }
 
                 team.Opponent = null;
@@ -251,6 +270,32 @@ namespace TournamentManager.ViewModels
             foreach (var dummy in DummyTeams)
             {
                 dummy.Opponent = null;
+                dummy.TeamMatchOutcomePrevious = dummy.TeamMatchOutcomeCurrent;
+            }
+        }
+
+        public void ResetRound()
+        {
+            TeamPairings.Clear();
+
+            foreach (var team in AllTeams)
+            {
+                team.Opponent = null;
+                team.IsNewTeam = false;
+            }
+
+            foreach (var dummy in DummyTeams)
+            {
+                dummy.Opponent = null;
+            }
+
+            if (RoundCount == 1)
+            {
+                MatchmakeTeamsFirstRound();
+            }
+            else
+            {
+                MatchmakeTeams();
             }
         }
 
@@ -273,7 +318,7 @@ namespace TournamentManager.ViewModels
                             dummyTeam = CreateDummyTeam();
                             team.Opponent = dummyTeam;
                             dummyTeam.Opponent = team;
-                            
+
                         }
                         else
                         {
@@ -297,14 +342,14 @@ namespace TournamentManager.ViewModels
                 }
             }
         }
-        
+
 
         public void MatchmakeNewlyAddedTeam(Team newTeam)
         {
             var opponent = FindOpponentForNewlyAddedTeam(newTeam);
             var pairingOfOpponent = FindTeamPairingByTeamId(opponent.TeamId);
 
-            if (pairingOfOpponent == null) 
+            if (pairingOfOpponent == null)
             {
                 newTeam.Opponent = opponent;
                 opponent.Opponent = newTeam;
@@ -323,7 +368,7 @@ namespace TournamentManager.ViewModels
             }
         }
 
-        public void MatchmakeTeamsNext()
+        public void MatchmakeTeams()
         {
             foreach (var team in AllTeams)
             {
@@ -333,28 +378,33 @@ namespace TournamentManager.ViewModels
                 }
 
                 Team? opponent = null;
-                var possibleOpponents = AllTeams.Where(t => t.TeamId != team.TeamId)
+
+                var possibleOpponentsQuery = AllTeams.Where(t => t.TeamId != team.TeamId)
                     .Where(t => t.IsKicked != true)
                     .Where(t => t.Opponent == null)
-                    .Where(t => !team.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId));
+                    .Where(t => !team.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId))
+                    .AsQueryable();
 
-                if (team.IsWinner == true)
+                if (team.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Winner)
                 {
-                    possibleOpponents = possibleOpponents.Where(t => t.IsDraw == true || t.IsNewTeam == true || t.IsWinner == true).ToList();
+                    possibleOpponentsQuery = possibleOpponentsQuery.Where(t => t.IsNewTeam == true || t.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Draw || t.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Winner).AsQueryable();
                 }
 
-                if (team.IsLoser == true)
+                if (team.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Loser)
                 {
-                    possibleOpponents = possibleOpponents.Where(t => t.IsDraw == true || t.IsNewTeam == true || t.IsLoser == true).ToList();
+                    possibleOpponentsQuery = possibleOpponentsQuery.Where(t => t.IsNewTeam == true || t.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Draw || t.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Loser).AsQueryable();
                 }
+
+                var possibleOpponentsList = possibleOpponentsQuery.ToList();
+                possibleOpponentsList.Shuffle();
 
                 // Find team with smallest score difference to current team
-                if (possibleOpponents.Any())
+                if (possibleOpponentsList.Any())
                 {
-                    int smallestScoreDifference = Math.Abs(team.TeamTournamentScore - possibleOpponents.First().TeamTournamentScore);
-                    opponent = possibleOpponents.First();
+                    int smallestScoreDifference = Math.Abs(team.TeamTournamentScore - possibleOpponentsList.First().TeamTournamentScore);
+                    opponent = possibleOpponentsList.First();
 
-                    foreach (var possibleOpponent in possibleOpponents)
+                    foreach (var possibleOpponent in possibleOpponentsList)
                     {
                         var scoreDifference = Math.Abs(team.TeamTournamentScore - possibleOpponent.TeamTournamentScore);
                         if (scoreDifference <= smallestScoreDifference)
@@ -380,16 +430,8 @@ namespace TournamentManager.ViewModels
                 team.Opponent = opponent;
                 opponent.Opponent = team;
 
-                team.IsWinner = null;
-                team.IsLoser = null;
-                team.IsDraw = null;
-                team.ResetGameMatchScore();
-
-
-                opponent.IsWinner = null;
-                opponent.IsLoser = null;
-                opponent.IsDraw = null;
-                opponent.ResetGameMatchScore();
+                team.TeamMatchOutcomeCurrent = null;
+                opponent.TeamMatchOutcomeCurrent = null;
 
                 if (opponent.IsNewTeam == true)
                 {
@@ -406,35 +448,33 @@ namespace TournamentManager.ViewModels
         }
         // End matchmaking methods
 
-        public void RestartFirstRound()
+        public void RestartTournament()
         {
-            foreach(var team in AllTeams) 
-            {
-                team.ResetAllTeamValues();
-                team.ResetAllTeamStatuses();
-            }
 
-            foreach (var dummy in DummyTeams) 
-            {
-                dummy.ResetAllTeamValues();
-                dummy.ResetAllTeamStatuses();
-            }
+            AllTeams.Clear();
+            TeamPairings.Clear();
+            DummyTeams.Clear();
 
+            NextTeamId = 0;
+            NextTeamDisplayNumber = 0;
+            dummyTeamCount = 0;
             RoundCount = 0;
-            RoundStartDateTime = null;
+            TournamentStartDateTime = null;
+            MaxNumberOfRounds = null;
             TeamPairings.Clear();
             TeamScoreboardListing.Clear();
+            SelectedTournamentType = null;
             TournamentState = TournamentState.NotStarted;
         }
 
         public bool HasAnyUnresolvedPairs()
         {
             var unresolvedPairOutcomes = TeamPairings.Where(tp => tp.Team1 != null && tp.Team2 != null)
-               .Where(tp => tp.Team1.IsWinner == null && tp.Team1.IsLoser == null && tp.Team1.IsDraw == null)
-               .Where(tp => tp.Team2.IsWinner == null && tp.Team2.IsLoser == null && tp.Team2.IsDraw == null)
+               .Where(tp => tp.Team1.TeamMatchOutcomeCurrent == null)
+               .Where(tp => tp.Team2.TeamMatchOutcomeCurrent == null)
                .ToList();
 
-            if (unresolvedPairOutcomes.Any()) 
+            if (unresolvedPairOutcomes.Any())
             {
                 return true;
             }
@@ -451,7 +491,7 @@ namespace TournamentManager.ViewModels
             for (int i = 0; i < newTeamOrdering.Count(); i++)
             {
                 var team = newTeamOrdering[i];
-                TeamScoreboardListing.Add(new TeamScoreboardListing(i + 1, team.Name, team.TeamTournamentScore, team.ScoreDifference));
+                TeamScoreboardListing.Add(new TeamScoreboardListing(team.TeamId, i + 1, team.TeamDisplayName, team.TeamTournamentScore, team.ScoreDifference));
             }
 
         }
@@ -460,17 +500,22 @@ namespace TournamentManager.ViewModels
         {
             dummyTeamCount += 1;
             NextTeamId += 1;
-            var dummyTeam = new Team(teamId: NextTeamId, name: $"Dummy Team {dummyTeamCount}", isDummyTeam: true, isNewTeam: false);
+            var dummyTeam = new Team(teamId: NextTeamId, teamDisplayNumber: null, name: $"Dummy Team {dummyTeamCount}", isDummyTeam: true, isNewTeam: false);
             DummyTeams.Add(dummyTeam);
             return dummyTeam;
         }
 
         // Use this method to add teams instead of adding to collection directly
-        public void AddTeam(Team teamToAdd)
+        public Team AddTeam(string teamName, Office office, bool isNewTeam)
         {
+            IncrementNextTeamId();
+            IncrementNextTeamDisplayNumber();
+            var teamToAdd = new Team(teamId: NextTeamId, teamDisplayNumber: NextTeamDisplayNumber, name: teamName, isDummyTeam: false, isNewTeam: false, office: office);
             AllTeams.Add(teamToAdd);
-            var teamScoreboardListing = new TeamScoreboardListing(TeamScoreboardListing.Count + 1, teamToAdd.Name, teamToAdd.TeamTournamentScore, teamToAdd.ScoreDifference);
+            var teamScoreboardListing = new TeamScoreboardListing(teamToAdd.TeamId, TeamScoreboardListing.Count + 1, teamToAdd.TeamDisplayName, teamToAdd.TeamTournamentScore, teamToAdd.ScoreDifference);
             TeamScoreboardListing.Add(teamScoreboardListing);
+
+            return teamToAdd;
         }
 
 

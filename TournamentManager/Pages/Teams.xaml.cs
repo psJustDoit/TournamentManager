@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
+using TournamentManager.HelperClasses;
 using TournamentManager.Models;
 using TournamentManager.ViewModels;
 
@@ -36,12 +37,14 @@ namespace TournamentManager
             var menuItem = sender as MenuItem;
             var contextMenu = menuItem.Parent as ContextMenu;
             var teamName = contextMenu.PlacementTarget as TextBlock;
-            var teamToUpdate = teamName.DataContext as Team;
+            var teamListing = teamName.DataContext as TeamScoreboardListing;
 
-            if (teamToUpdate == null)
+            if (teamListing == null)
             {
                 return;
             }
+
+            var teamToUpdate = _tournamentViewModel.AllTeams.Where(t => t.TeamId == teamListing.TeamId).FirstOrDefault();
 
             var modal = new EditTeamModal(teamToUpdate, _tournamentViewModel);
             modal.Owner = Window.GetWindow(this);

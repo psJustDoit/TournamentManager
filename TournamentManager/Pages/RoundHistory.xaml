@@ -28,7 +28,7 @@
 
             <!-- Header -->
             <Border Grid.Column="0" Grid.Row="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 1, 1">
-                <TextBlock FontSize="20" Foreground="{StaticResource PrimaryFontColor}" Margin="20, 0 ,0 ,0" VerticalAlignment="Center"><Underline>Prethodne runde</Underline></TextBlock>
+                <TextBlock FontSize="20" FontWeight="Bold" Foreground="{StaticResource PrimaryFontColor}" Margin="20, 0 ,0 ,0" VerticalAlignment="Center"><Underline>Prethodne runde</Underline></TextBlock>
             </Border>
 
             <!-- Selected round -->
@@ -145,7 +145,7 @@
                                             <ColumnDefinition Width="15*" />
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TournamentScore}"/>
-                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}"/>
+                                        <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamDisplayName}"/>
                                         <TextBlock Grid.Column="2" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding ScoreDifference}"/>
                                     </Grid>
                                 </DataTemplate>

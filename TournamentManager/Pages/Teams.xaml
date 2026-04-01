@@ -55,23 +55,20 @@
                                     <ColumnDefinition Width="25*" />
                                 </Grid.ColumnDefinitions>
 
-                                <!--<Border Grid.Column="0" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 1, 0">-->
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 0, 0, 10">
-                                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamIndex}" />
+                                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamPosition}" />
                                     <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="." />
                                 </StackPanel>
                                 
-                                <!--</Border>-->
 
-                                <!--<Border Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 1, 0">-->
-                                <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}" Margin="0, 0, 0, 10" >
+                                <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamDisplayName}" Margin="0, 0, 0, 10" >
                                         <TextBlock.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem Header="Ažuriraj" Click="TeamUpdate_Click"/>
                                             </ContextMenu>
                                         </TextBlock.ContextMenu>
                                 </TextBlock>
-                                <!--</Border>-->
+
 
                                 <TextBlock Grid.Column="2" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TournamentScore}" Margin="0, 0, 0, 10"/>
 
@@ -80,52 +77,6 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <!--<Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="10*" />
-                        <ColumnDefinition Width="40*" />
-                        <ColumnDefinition Width="25*" />
-                        <ColumnDefinition Width="25*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="2, 0, 2, 0">
-                        <ItemsControl  ItemsSource="{Binding TeamScoreboardListing}" HorizontalAlignment="Center">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}" Margin="0, 5, 0, 5" >
-                                        <TextBlock.ContextMenu>
-                                            <ContextMenu>
-                                                <MenuItem Header="Ažuriraj" Click="TeamUpdate_Click"/>
-                                            </ContextMenu>
-                                        </TextBlock.ContextMenu>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Border>
-
-                    <Border Grid.Column="2" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 2, 0">
-                        <ItemsControl ItemsSource="{Binding AllTeams}" HorizontalAlignment="Center">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamTournamentScore}" Margin="0, 5, 0, 5"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Border>
-
-                    <Border Grid.Column="3" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 0, 2, 0">
-                        <ItemsControl ItemsSource="{Binding AllTeams}" HorizontalAlignment="Center">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding ScoreDifference}" Margin="0, 5, 0, 5"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Border>
-
-
-                </Grid>-->
 
             </ScrollViewer>
         </Border>

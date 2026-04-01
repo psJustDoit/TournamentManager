@@ -21,7 +21,7 @@ namespace TournamentManager
         }
 
         private readonly TeamEnum _teamToSwapPosition;
-        public int? SelectedTeamId { get; set; }
+        public Team? SelectedTeam { get; set; }
         public SwapTeamModal(TeamPairing pairing, TournamentViewModel tournamentViewModel, Team teamToSwap, TeamEnum teamToSwapPosition)
         {
             List<Team> possibleTeamSwaps = new List<Team>();
@@ -39,7 +39,7 @@ namespace TournamentManager
                         .Where(t => t.IsKicked != true)
                         .Where(t => pairing.Team2?.TeamsIdsAlreadyPlayedWith.Contains(t.TeamId) == false)
                         .ToList();
-                   
+
                     break;
                 case TeamEnum.Team2:
                     possibleTeamSwaps = tournamentViewModel.AllTeams.Where(t => t.TeamId != teamToSwap.TeamId)
@@ -53,7 +53,7 @@ namespace TournamentManager
             }
 
             InitializeComponent();
-            
+
             DataContext = possibleTeamSwaps;
         }
 
@@ -63,24 +63,24 @@ namespace TournamentManager
 
             if (selectedTeam != null)
             {
-                SelectedTeamId = selectedTeam.TeamId;
+                SelectedTeam = selectedTeam;
             }
         }
 
         private void ButtonOK_Click(object sender, RoutedEventArgs e)
         {
-            if(SelectedTeamId == null)
+            if (SelectedTeam == null)
             {
                 MessageBox.Show("Nije selektiran tim za zamijenu", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            var teamPairingOfSelectedTeam = _tournamentViewModel.TeamPairings.Where(tp => tp.Team1?.TeamId == SelectedTeamId || tp.Team2?.TeamId == SelectedTeamId).FirstOrDefault();
+            var teamPairingOfSelectedTeam = _tournamentViewModel.TeamPairings.Where(tp => tp.Team1?.TeamId == SelectedTeam.TeamId || tp.Team2?.TeamId == SelectedTeam.TeamId).FirstOrDefault();
 
             Team? selectedTeamOpponent = null;
-            if (teamPairingOfSelectedTeam != null) 
+            if (teamPairingOfSelectedTeam != null)
             {
-                if (teamPairingOfSelectedTeam.Team1?.TeamId == SelectedTeamId) 
+                if (teamPairingOfSelectedTeam.Team1?.TeamId == SelectedTeam.TeamId)
                 {
                     selectedTeamOpponent = teamPairingOfSelectedTeam.Team2;
                 }
@@ -95,18 +95,28 @@ namespace TournamentManager
                 return;
             }
 
-            if (selectedTeamOpponent != null && !selectedTeamOpponent.IsDummyTeam)
+            // Check if opponent of selected team already played with team to swap
+            if (selectedTeamOpponent != null && !selectedTeamOpponent.IsDummyTeam && selectedTeamOpponent.TeamsIdsAlreadyPlayedWith.Contains(_teamToSwap.TeamId))
             {
-                if (selectedTeamOpponent.TeamsIdsAlreadyPlayedWith.Contains(_teamToSwap.TeamId))
-                {
-                    MessageBox.Show("Protivnik odabranog tima je već igrao protiv tima s kojim se želi napraviti zamijena", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+
+                MessageBox.Show($"Protivnik odabranog tima ({selectedTeamOpponent.Name}) je već igrao protiv tima s kojim se želi izvršiti zamijena ({_teamToSwap.Name})", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                //MessageBox.Show("Protivnik odabranog tima je već igrao protiv tima s kojim se želi napraviti zamijena", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+
+            }
+
+            // Check if opponent of team to swap already played with selected team
+            if (_teamToSwap.Opponent != null && !_teamToSwap.Opponent.IsDummyTeam && _teamToSwap.Opponent.TeamsIdsAlreadyPlayedWith.Contains(SelectedTeam.TeamId))
+            {
+
+                MessageBox.Show($"Protivnik tima s kojim se želi izvršiti zamijena ({_teamToSwap.Opponent.Name}) je već igrao protiv odabranog tima ({SelectedTeam.Name})", "Greška", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+
             }
 
             // Swap teams
             Team teamCopy = null;
-            if(teamPairingOfSelectedTeam.Team1?.TeamId == SelectedTeamId)
+            if (teamPairingOfSelectedTeam.Team1?.TeamId == SelectedTeam.TeamId)
             {
                 teamCopy = teamPairingOfSelectedTeam.Team1; // Get selected team from its team pairing
                 teamPairingOfSelectedTeam.Team1 = _teamToSwap; // Place team to be swapped in place of selected team

@@ -19,7 +19,7 @@ namespace TournamentManager
         {
             _tournamentViewModel = tournamentViewModel;
             _team = team;
-            _teamCopy = new Team(teamId: _team.TeamId, name: _team.Name, isDummyTeam: _team.IsDummyTeam, office: _team.Office)
+            _teamCopy = new Team(teamId: _team.TeamId, teamDisplayNumber: _team.TeamDisplayNumber, name: _team.Name, isDummyTeam: _team.IsDummyTeam, office: _team.Office)
             {
                 Wins = _team.Wins,
                 Losses = _team.Losses,
@@ -30,9 +30,9 @@ namespace TournamentManager
             DataContext = _teamCopy;
             Offices = DbRepository.GetAllOffices();
 
-            OfficeComboBox.SelectedItem = _team.Office;
-
             InitializeComponent();
+
+            OfficeComboBox.SelectedItem = Offices.FirstOrDefault(o => o.Id == _team.Office.Id); ;
         }
 
         private void IncrementTeamWins_Click(object sender, RoutedEventArgs e)
@@ -47,22 +47,22 @@ namespace TournamentManager
 
         private void IncrementTeamLosses_Click(object sender, RoutedEventArgs e)
         {
-            _team.IncreaseTeamLossBy1();
+            _teamCopy.IncreaseTeamLossBy1();
         }
 
         private void SubtractTeamLosses_Click(object sender, RoutedEventArgs e)
         {
-            _team.DecreaseTeamLossBy1();
+            _teamCopy.DecreaseTeamLossBy1();
         }
 
         private void IncrementTeamDraws_Click(object sender, RoutedEventArgs e)
         {
-            _team.IncreaseTeamDrawBy1();
+            _teamCopy.IncreaseTeamDrawBy1();
         }
 
         private void SubtractTeamDraws_Click(object sender, RoutedEventArgs e)
         {
-            _team.DecreaseTeamDrawBy1();
+            _teamCopy.DecreaseTeamDrawBy1();
         }
 
         private void UpdateTeam_Click(object sender, RoutedEventArgs e) 

@@ -1,16 +1,20 @@
-﻿namespace TournamentManager.HelperClasses
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace TournamentManager.HelperClasses
 {
     public class TeamScoreboardListing
     {
-        public int TeamIndex { get; set; }
-        public string Name { get; set; }
+        public int TeamId { get; set; }
+        public int TeamPosition { get; set; }
+        public string TeamDisplayName { get; set; }
         public int TournamentScore { get; set; }
         public int? ScoreDifference { get; set; }
 
-        public TeamScoreboardListing(int teamIndex, string name, int tournamentScore, int? scoreDifference)
+        public TeamScoreboardListing(int teamId, int teamPosition, string teamDisplayNumber, int tournamentScore, int? scoreDifference)
         {
-            TeamIndex = teamIndex;
-            Name = name;
+            TeamId = teamId;
+            TeamPosition = teamPosition;
+            TeamDisplayName = teamDisplayNumber;
             TournamentScore = tournamentScore;
             ScoreDifference = scoreDifference;
         }

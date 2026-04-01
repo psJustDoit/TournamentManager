@@ -2,6 +2,7 @@
 using System.Windows.Data;
 using System.Windows.Media;
 using TournamentManager.Models;
+using TournamentManager.Enums;
 
 namespace TournamentManager.Converters
 {
@@ -12,9 +13,9 @@ namespace TournamentManager.Converters
             var team = value as Team;
             if (team == null) return Brushes.Transparent;
 
-            if (team.IsWinner == true) return Brushes.Green;
-            if (team.IsLoser == true) return Brushes.Red;
-            if (team.IsDraw == true) return Brushes.Yellow;
+            if (team.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Winner) return Brushes.Green;
+            if (team.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Loser) return Brushes.Red;
+            if (team.TeamMatchOutcomePrevious == TeamMatchOutcomeEnum.Draw) return Brushes.Yellow;
 
             return Brushes.Transparent;
         }

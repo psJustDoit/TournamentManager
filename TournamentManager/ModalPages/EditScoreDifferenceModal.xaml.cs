@@ -27,8 +27,8 @@ namespace TournamentManager
             _pairing = teamPairing;
             DataContext = _pairing;
 
-            Team1GameMatchScore.Text = _pairing.Team1?.GameMatchScore?.ToString();
-            Team2GameMatchScore.Text = _pairing.Team2?.GameMatchScore?.ToString();
+            Team1GameMatchScore.Text = _pairing.Team1MatchScore.ToString();
+            Team2GameMatchScore.Text = _pairing.Team2MatchScore.ToString();
         }
 
         private void ButtonOK_Click(object sender, RoutedEventArgs e)
@@ -49,8 +49,8 @@ namespace TournamentManager
             var team1MatchScore = Convert.ToInt32(Team1GameMatchScore.Text);
             var team2MatchScore = Convert.ToInt32(Team2GameMatchScore.Text);
 
-            _pairing.Team1?.GameMatchScore = team1MatchScore;
-            _pairing.Team2?.GameMatchScore = team2MatchScore;
+            _pairing.Team1MatchScore = team1MatchScore;
+            _pairing.Team2MatchScore = team2MatchScore;
 
             this.Close();
         }

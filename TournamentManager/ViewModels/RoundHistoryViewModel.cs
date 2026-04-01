@@ -56,12 +56,10 @@ namespace TournamentManager.ViewModels
                 Team? team1 = null;
                 if (teamPairing.Team1 != null)
                 {
-                    team1 = new Team(teamPairing.Team1.TeamId, teamPairing.Team1.Name, teamPairing.Team1.IsDummyTeam);
-                    team1.IsDraw = teamPairing.Team1.IsDraw;
-                    team1.IsLoser = teamPairing.Team1.IsLoser;
-                    team1.IsWinner = teamPairing.Team1.IsWinner;
+                    team1 = new Team(teamPairing.Team1.TeamId, teamPairing.Team1.TeamDisplayNumber, teamPairing.Team1.Name, teamPairing.Team1.IsDummyTeam);
+                    team1.TeamMatchOutcomePrevious = teamPairing.Team1.TeamMatchOutcomePrevious;
                     team1.TeamTournamentScore = teamPairing.Team1.TeamTournamentScore;
-                    team1.GameMatchScore = teamPairing.Team1.GameMatchScore;
+                    team1.MatchScore = teamPairing.Team1.MatchScore;
                     team1.ScoreDifference = teamPairing.Team1.ScoreDifference;
                     team1.Wins = teamPairing.Team1.Wins;
                     team1.Losses = teamPairing.Team1.Losses;
@@ -73,12 +71,10 @@ namespace TournamentManager.ViewModels
                 Team? team2 = null;
                 if (teamPairing.Team2 != null)
                 {
-                    team2 = new Team(teamPairing.Team2.TeamId, teamPairing.Team2.Name, teamPairing.Team2.IsDummyTeam);
-                    team2.IsDraw = teamPairing.Team2.IsDraw;
-                    team2.IsLoser = teamPairing.Team2.IsLoser;
-                    team2.IsWinner = teamPairing.Team2.IsWinner;
+                    team2 = new Team(teamPairing.Team2.TeamId, teamPairing.Team2.TeamDisplayNumber, teamPairing.Team2.Name, teamPairing.Team2.IsDummyTeam);
+                    team2.TeamMatchOutcomePrevious = teamPairing.Team2.TeamMatchOutcomePrevious;
                     team2.TeamTournamentScore = teamPairing.Team2.TeamTournamentScore;
-                    team2.GameMatchScore = teamPairing.Team2.GameMatchScore;
+                    team2.MatchScore = teamPairing.Team2.MatchScore;
                     team2.ScoreDifference = teamPairing.Team2.ScoreDifference;
                     team2.Wins = teamPairing.Team2.Wins;
                     team2.Losses = teamPairing.Team2.Losses;
@@ -105,6 +101,14 @@ namespace TournamentManager.ViewModels
             // Add round info to round histories
             Rounds.Add(tournamentViewModel.RoundCount);
             AllRounds.Add(roundHistoryInfo);
+        }
+
+        public void RestartRoundsHistory()
+        {
+            Rounds.Clear();
+            AllRounds.Clear();
+            RoundToView = null;
+            SelectedRound = null;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

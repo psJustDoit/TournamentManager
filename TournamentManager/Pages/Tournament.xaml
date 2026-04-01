@@ -56,11 +56,6 @@
                     <TextBlock Text="{Binding RoundStartDateTime}" Foreground="{StaticResource PrimaryFontColor}" FontSize="15" VerticalAlignment="Center"/>
                 </StackPanel>
 
-                <!-- End time -->
-                <!--<StackPanel Grid.Column="3" Orientation="Horizontal">
-                    <TextBlock Text="Vrijeme završetka:" Foreground="{StaticResource PrimaryFontColor}" FontSize="15" VerticalAlignment="Center" Margin="0, 0, 5, 0"/>
-                    <TextBox VerticalAlignment="Center" Margin="10,0,0,0" Width="150"/>
-                </StackPanel>-->
             </Grid>
         </Border>
 
@@ -121,7 +116,7 @@
                                             </Button>
 
                                             <!-- Team1 win button -->
-                                            <Button Grid.Column="3" Grid.Row="0" FontSize="20" Click="TeamMatchOutcome_Click" Tag="{x:Static enums:TeamMatchOutcomeEnum.Team1Win}">W</Button>
+                                            <Button Grid.Column="3" Grid.Row="0" FontSize="20" Click="TeamMatchOutcome_Click" Tag="{x:Static enums:TeamPairingMatchOutcomeEnum.Team1Win}">W</Button>
 
                                             <!-- Team1 kick button -->
                                             <Button Grid.Column="6" Grid.Row="0" Click="TeamKick_Click" Tag="{x:Static enums:TeamEnum.Team1}" ToolTip="Kick">
@@ -129,7 +124,7 @@
                                                    Width="24" Height="24" 
                                                    Margin="0,0,10,0"/>
                                             </Button>
-                                            
+
 
                                             <!-- TEAM 2 -->
                                             <Border Tag="Team2Outcome" Grid.Column="0" Grid.Row="1" BorderBrush="{StaticResource PrimaryFontColor}" BorderThickness="0, 1, 0, 0"></Border>
@@ -147,11 +142,11 @@
                                             </Button>
 
                                             <!-- Team2 win button -->
-                                            <Button Grid.Column="3" Grid.Row="1" FontSize="20" Click="TeamMatchOutcome_Click" Tag="{x:Static enums:TeamMatchOutcomeEnum.Team2Win}">W</Button>
-                                            
+                                            <Button Grid.Column="3" Grid.Row="1" FontSize="20" Click="TeamMatchOutcome_Click" Tag="{x:Static enums:TeamPairingMatchOutcomeEnum.Team2Win}">W</Button>
+
 
                                             <!-- Draw button -->
-                                            <Button Grid.Column="4" Grid.RowSpan="2" FontSize="20" Click="TeamMatchOutcome_Click" Tag="{x:Static enums:TeamMatchOutcomeEnum.Draw}">D</Button>
+                                            <Button Grid.Column="4" Grid.RowSpan="2" FontSize="20" Click="TeamMatchOutcome_Click" Tag="{x:Static enums:TeamPairingMatchOutcomeEnum.Draw}">D</Button>
 
                                             <!-- Score diff edit button -->
                                             <Button Grid.Column="5" Grid.RowSpan="2" Foreground="{StaticResource PrimaryFontColor}" Click="EditScoreDifference_Click" ToolTip="Edit score difference">
@@ -207,7 +202,7 @@
                                         <ColumnDefinition Width="15*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TournamentScore}"/>
-                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding Name}"/>
+                                    <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding TeamDisplayName}"/>
                                     <TextBlock Grid.Column="2" HorizontalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}" FontSize="20" Text="{Binding ScoreDifference}"/>
                                 </Grid>
                             </DataTemplate>
@@ -229,9 +224,9 @@
             <!-- Number of rounds -->
             <StackPanel Orientation="Horizontal" Grid.Column="0">
                 <Label Foreground="{StaticResource PrimaryFontColor}" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20">Broj rundi:</Label>
-                <TextBox x:Name="NumberOfRoundsTextbox" Width="80" VerticalAlignment="Center"></TextBox>
+                <TextBox x:Name="NumberOfRoundsTextbox" Text="{Binding MaxNumberOfRounds}" Width="80" VerticalAlignment="Center"></TextBox>
             </StackPanel>
-            
+
             <!-- Start tournament button -->
             <Border CornerRadius="40" x:Name="StartTournamentButton" 
                  Grid.Column="1"
@@ -314,33 +309,61 @@
             <!-- Tournament finished text -->
             <TextBlock x:Name="TournamentFinishedText" Grid.Column="1" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource PrimaryFontColor}"><Underline>Turnir završen!</Underline></TextBlock>
 
-            <!-- Restart first round button -->
-            <Border CornerRadius="40" x:Name="RestartFirstRoundButton" 
-              Grid.Column="2"
-              Margin="15, 5, 15, 5"
-              BorderThickness="2"
-              Background="{StaticResource ButtonBackgroundColor}" 
-              BorderBrush="{StaticResource PrimaryFontColor}"  
-              Width="60"
-              Height="60"
-              ToolTip="Restartiraj prvu rundu"
-              MouseLeftButtonDown="RestartFirstRound_Click">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <!-- Hover effect -->
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Opacity" Value="0.8" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                <Image Source="/Icons/redo.png" 
-                   Width="24" Height="24" 
-                   />
-            </Border>
+            <!-- Reset round and restart tournament -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <!-- Reset round button -->
+                <Border CornerRadius="40" x:Name="ResetRound" 
+                   Margin="15, 5, 15, 5"
+                   BorderThickness="2"
+                   Background="{StaticResource ButtonBackgroundColor}" 
+                   BorderBrush="{StaticResource PrimaryFontColor}"  
+                   Width="60"
+                   Height="60"
+                   ToolTip="Reset rundu"
+                   MouseLeftButtonDown="ResetRound_Click">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <!-- Hover effect -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.8" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Image Source="/Icons/undo.png" 
+                        Margin="5,0,5,0"
+                        Width="24" Height="24" />
+                </Border>
+
+                <!-- Restart tournament button -->
+                <Border CornerRadius="40" x:Name="RestartTournament" 
+                       Margin="15, 5, 15, 5"
+                       BorderThickness="2"
+                       Background="{StaticResource ButtonBackgroundColor}" 
+                       BorderBrush="{StaticResource PrimaryFontColor}"  
+                       Width="60"
+                       Height="60"
+                       ToolTip="Restart turnir"
+                       MouseLeftButtonDown="RestartTournament_Click">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Style.Triggers>
+                                <!-- Hover effect -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="0.8" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Image Source="/Icons/redo.png" 
+                        Margin="5,0,5,0"
+                        Width="24" Height="24" />
+                </Border>
+            </StackPanel>
+
         </Grid>
-        
+
 
         <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBlock Text="Igra: " FontSize="20" Foreground="{StaticResource PrimaryFontColor}"/>
